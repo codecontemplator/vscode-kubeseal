@@ -10,16 +10,35 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:extension.helloWorld"
+		"onCommand:extension.sealKubeSecretSelectedText",
+		"onCommand:extension.sealKubeSecretFile"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "extension.helloWorld",
-				"title": "Hello World"
+				"command": "extension.sealKubeSecretSelectedText",
+				"title": "Seal Kubernetes Secret - Selection"
+			},
+			{
+				"command": "extension.sealKubeSecretFile",
+				"title": "Seal Kubernetes Secret - File"
 			}
-		]
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Seal Kubernetes Secret Configuration",
+			"properties": {
+				"kubeseal.executablePath": {
+					"type": [
+						"string"
+					],
+					"default": null,
+					"description": "Where to find kubeseal executable",
+					"scope": "resource"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -41,5 +60,9 @@
 		"mocha": "^7.0.1",
 		"typescript": "^3.7.5",
 		"vscode-test": "^1.3.0"
+	},
+	"dependencies": {
+		"@types/tmp": "^0.1.0",
+		"tmp": "^0.1.0"
 	}
 }

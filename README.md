@@ -52,15 +52,15 @@ The corresponding command line would look something like
 kubeseal <mysecret.yml --scope cluster-wide --cert mycert.pem --format yaml >mysealedsecret.yml
 ```
 
-<!--
- \!\[feature X\]\(images/feature-x.png\)
--->
+![Seal a secret file](./media/sealFile.mp4)
 
 You can also encrypt the currently selected text, corresponding to a a command line such as
 
 ```bash
 echo -n selectedSecretText | kubeseal --raw --from-file=/dev/stdin --scope cluster-wide --cert mycert.pem
 ```
+
+![Seal selected text](./media/sealSelectedText.mp4)
 
 ## Requirements
 

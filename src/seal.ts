@@ -90,6 +90,8 @@ export async function sealSecretFile(
             throw `Internal error. Unknown scope ${scope}`;
     }
 
+    console.log("command", command)
+    
     // Execute command line
     try {
         const cmdProcess = cp.exec(command);

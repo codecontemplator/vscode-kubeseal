@@ -1,65 +1,81 @@
-# kubeseal README
+# Kubeseal extension for VS Code
 
-This is the README for your extension "kubeseal". After writing up a brief description, we recommend including the following sections.
+This extension provides functionality for sealed kubernets secrets.
+I wraps the command line utility `kubeseal` which is a part of the 
+https://github.com/bitnami-labs/sealed-secrets.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+You can use this extension to create a new sealed secrets file from an existing secret file.
 
-For example if there is an image subfolder under your extension project workspace:
+A secret file may look like
 
-\!\[feature X\]\(images/feature-x.png\)
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: exampleSecret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: MWYyZDFlMmU2N2Rm
+```
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+And the result may look like
+
+```yaml
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  annotations:
+    sealedsecrets.bitnami.com/cluster-wide: "true"
+  creationTimestamp: null
+  name: exampleSecret
+spec:
+  encryptedData:
+    password: AgBjRNe0NQ77k1zMeKioomLLo4Pp3FWU0UIJ8+2I0Pm1kdPosYhIoJi6lzqolw/5oP4a76NMazm68eD3dC667B1ungGKYqt6n+gBrTod5rvhA7kS2vLTXdv42siEcstUOCRSevQ5ad9CcsVjgvI8V+R2I7LwI9M5ps/wfWh5pHxfbZcP61iSmCEA5uZtYk576NlNG5RHoK7LdRGXB4535kn2CDoAP37seVQkjQnJJ1OnnVLO6YrZP0/7lMMDpiIDs4baQ8+MzeEyi+sN5+K7/OUO5Re3+QTeVrw4P1g3Ie1ZY9j27FjfDNH71mafCbvK8z5RwNSCCQRAM8KtJYknm+FdSQ7WQPs6OVIUAoSdzhaZw3gCEuVmjzVz4JYzSFuqmbMw4WbJaT2TMazsQFzDmaneizwpcA2HY9bMor2pY9ArLDw6ioIVG1ts+vrEnplb6D4i/n8xGk4fwkYebdD+JlG4DmjfTVMXaJsgemoI5Oveph9wmu5u8eAYQyGpXxhRZYnhgpMcti70d+y9M+SsTf95ffJ2j0HtGFPKlSMI2XKMIcSUEyGtFKczilbemRFd+0ARpnPmSTDc3VpBvY1zF+0Y88eruh8R0QOODjRR6ZtEAfVyhGtsfQCH3HVvoa/kPMwOORkn5EHQr+oZ/MIqPiYB061JLWcNe+9rr9S910g0eqKXeCnmFkTrS63y+Ru3V6BsW3f9oLMNWJZdu70=
+    username: AgB14U9P1Xg6z3GZnfGvMc5D94yLw71kJhqlLCO+7rHHMGICS9KVYUEJi9CXaKvtxws6Rra49W+VaF3wCdzJ6f+QSIC8bAVGg35xTNlC9drB0iXV5Q4Svh9vnKJ+OGmIeAKx3xcWBiUDM6rLAZwjCU4bhChrLRHHmqAbZqlgdU5eoFjSDz5nfH7QARMej8HUKZT6hhrC0Sj9BpDFwGt9bi87MerZOVeIov/q4Bc+9iSGZtcGC4sfmVAQjT7HkyxotR+cp2JSzZuKKQ25h73L1ZqwiCyG7Fm2mZWTaQF2PzCrAUMt8jxSLtGiBH3tbgkSueB+ZAfzC9zjyJ1fUhzzJ/21J+GfGx6ezd5VTshk8YnKo+t8pTuShRp7QuHvMHF8lfGab8SirdbsGxuY0/OsmW27DYJ5xgPRLms1sjvTZG/+sVH4YONlTdR2yUSkPWcZb23kEPLf1IkcfJ8Zoe9QHFCqOl8OwM7FFqhbQ6i++BKlRg13BJfbM4Tl9nOJu3r9ELTv6nIBizihrp+7NKwefOoYMDlzyu8iPAK3nN6ZlmzlqhA30eZKWf5EVvRpS8Q+CBGykhY1YnfcdMiBM0MCdlAqOHEuBZV6pXCftiRG+1K5Jk906sq5+Nut/uJmY6Qc7LLExAEu+q83GYcQQud8GqLF0/l71YPuao+SOVQndQLR1v+G6Xlrx0E8GJ7zPDGFnfNuRyYq/g==
+  template:
+    metadata:
+      annotations:
+        sealedsecrets.bitnami.com/cluster-wide: "true"
+      creationTimestamp: null
+      name: exampleSecret
+    type: Opaque
+status: {}
+```
+
+The corresponding command line would look something like
+
+
+```bash
+kubeseal <mysecret.yml --scope cluster-wide --cert mycert.pem --format yaml >mysealedsecret.yml
+```
+
+<!--
+ \!\[feature X\]\(images/feature-x.png\)
+-->
+
+You can also encrypt the currently selected text, corresponding to a a command line such as
+
+```bash
+echo -n selectedSecretText | kubeseal --raw --from-file=/dev/stdin --scope cluster-wide --cert mycert.pem
+```
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+The plugin ships a prebuilt version of kubeseal for windows. On other platform kubeseal must be installed as a prerequisite. Installation instructions can be found [here](https://github.com/bitnami-labs/sealed-secrets#installation).
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `kubeseal.executablePath`: path to kubeseal executable
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+This extension is very much work in progress. Especially the file creation command where the ui does not really make perfect sense yet.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Initial release

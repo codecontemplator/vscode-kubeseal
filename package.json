@@ -2,7 +2,7 @@
 	"name": "kubeseal",
 	"displayName": "Kubeseal",
 	"description": "Kubeseal for vscode",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"publisher": "codecontemplator",
 	"engines": {
 		"vscode": "^1.43.0"

@@ -4,6 +4,10 @@
 	"description": "Kubeseal for vscode",
 	"version": "0.1.1",
 	"publisher": "codecontemplator",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/codecontemplator/vscode-kubeseal.git"
+	},
 	"engines": {
 		"vscode": "^1.43.0"
 	},

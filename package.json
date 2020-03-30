@@ -2,7 +2,7 @@
 	"name": "kubeseal",
 	"displayName": "Kubeseal",
 	"description": "Kubeseal for vscode",
-	"version": "0.1.1",
+	"version": "0.0.1",
 	"publisher": "codecontemplator",
 	"repository": {
 		"type": "git",

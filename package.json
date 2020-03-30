@@ -3,6 +3,7 @@
 	"displayName": "Kubeseal",
 	"description": "Kubeseal for vscode",
 	"version": "0.0.3",
+	"publisher": "codecontemplator",
 	"engines": {
 		"vscode": "^1.43.0"
 	},

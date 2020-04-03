@@ -1,7 +1,7 @@
 # Kubeseal extension for VS Code
 
 This extension provides functionality for sealed kubernets secrets.
-I wraps the command line utility `kubeseal` which is a part of the 
+It wraps the command line utility `kubeseal` which is a part of the 
 https://github.com/bitnami-labs/sealed-secrets.
 
 ## Features

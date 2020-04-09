@@ -6,6 +6,7 @@ import * as mocha from "mocha";
 import * as fs from 'fs';
 import * as tmp from 'tmp';
 import * as path from 'path'
+import * as yaml from 'js-yaml'
 
 // https://code.visualstudio.com/api/working-with-extensions/testing-extension
 // https://github.com/microsoft/vscode-java-dependency/tree/master/test
@@ -121,15 +122,25 @@ data:
 
 			// Open secret file
 			const textDocument = await vscode.workspace.openTextDocument(temporaryFile.name) //({ content: secretFileContent })
-			await vscode.window.showTextDocument(textDocument);
+			await vscode.window.showTextDocument(textDocument)
 			assert.notEqual(textDocument, null);
 			assert.equal(vscode.workspace.textDocuments.length, 1)			
 
 			// Execute seal secret file command - This is our 'act' step
-			await vscode.commands.executeCommand('extension.sealKubeSecretFile');
+			await vscode.commands.executeCommand('extension.sealKubeSecretFile')
 
 			// Assert expected result
-			assert.equal(vscode.workspace.textDocuments.length, 2);
+			assert.equal(vscode.workspace.textDocuments.length, 2)
+			const resultDocument = vscode.workspace.textDocuments.find(x => x != textDocument)
+			const resultText = resultDocument?.getText()
+			if (!resultText) assert.fail()
+			const yamlResult = yaml.safeLoad(resultText)
+			assert.ok(yamlResult)
+			assert.equal(yamlResult.kind, 'SealedSecret')
+			assert.equal(yamlResult.metadata.name, 'fake-name')
+			assert.equal(yamlResult.metadata.namespace, 'fake-namespace')
+			assert.ok(yamlResult.spec.encryptedData.password)
+			assert.ok(yamlResult.spec.encryptedData.username)
 		}
 		finally
 		{

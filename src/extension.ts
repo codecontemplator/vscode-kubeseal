@@ -1,40 +1,47 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as path from 'path';
-//import { stringify } from 'querystring';
 import { collectSealSelectedTextUserInput } from './userInput';
 import { sealSecretRaw, sealSecretFile } from './seal';
 import { collectSealSelectedTextDefaults } from './defaults';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+let extensionState = {
+	kubeSealPath: ''
+}
+
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "collector-kubeseal" is now active!');
-	
-	function getKubesealExectutablePath() : string {
-		// TODO: implement a more refined strategy
-		const kubesealConfiguration = vscode.workspace.getConfiguration('kubeseal');
-		console.log("kubesealConfiguration", kubesealConfiguration)
-		let kubeSealPath : string = kubesealConfiguration.get<string>('executablePath') || path.join(context.extensionPath, 'bin', 'kubeseal.exe');
-		console.log("kubeSealPath", kubeSealPath)
-		return kubeSealPath;
+	console.log('Activating kubeseal extension');
+
+	function initializeConfiguration() {
+		console.log("Initialize configuration")
+		const kubesealConfiguration = vscode.workspace.getConfiguration('kubeseal')
+		extensionState.kubeSealPath = kubesealConfiguration.get<string>('executablePath') || path.join(context.extensionPath, 'bin', 'kubeseal.exe')
 	}
+
+	initializeConfiguration()
+
+	const configSubscription = vscode.workspace.onDidChangeConfiguration(e => {
+		console.log('onDidChangeConfiguration')
+		if (e.affectsConfiguration('kubeseal')) {
+			console.log('onDidChangeConfiguration affects kubeseal')
+			initializeConfiguration()
+        }
+	});
+
+	context.subscriptions.push(configSubscription);
+
+	//
+	// seal secret file
+	//
 
 	let sealKubeSecretFileCommand = vscode.commands.registerCommand('extension.sealKubeSecretFile', async () => {
 
-		console.log ("executing sealKubeSecretFile")
-		
 		let editor = vscode.window.activeTextEditor;
 
 		if (editor) {
 
 			if (editor.document.isDirty || editor.document.isUntitled) {
-				await vscode.commands.executeCommand('workbench.action.files.saveAs', "Hej");
-				//const fileInfo = await vscode.window.showSaveDialog({...options})
+				await vscode.commands.executeCommand('workbench.action.files.saveAs');
 			}
 
 			if (editor.document.isDirty || editor.document.isUntitled) {
@@ -43,52 +50,48 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const document = editor.document;
 
-			const kubesealPath = getKubesealExectutablePath();
 			// TODO: implement good defaults
 			//const defaults = collectSealSelectedTextDefaults(context, document);
 			//console.log("defaults", defaults)
-			let userInput = await collectSealSelectedTextUserInput(context); 
-			console.log("userInput", userInput);
+			let userInput = await collectSealSelectedTextUserInput(context)
 
 			let sealedSecret = 
 				await sealSecretFile(
-					kubesealPath,
+					extensionState.kubeSealPath,
 					userInput.certificatePath,
 					document.fileName,
 					userInput.scope,
 					userInput.name,
 					userInput.namespace
-					);
+					)
 
-			const textDocument = await vscode.workspace.openTextDocument({ content: sealedSecret });
+			const textDocument = await vscode.workspace.openTextDocument({ content: sealedSecret })
 			if (textDocument) {
-				await vscode.window.showTextDocument(textDocument, { viewColumn: vscode.ViewColumn.Beside });
+				await vscode.window.showTextDocument(textDocument, { viewColumn: vscode.ViewColumn.Beside })
 			}		
 		}
 	});
 	
 	context.subscriptions.push(sealKubeSecretFileCommand);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
+	//
+	// seal secret selection
+	//
+
 	let sealKubeSecretSelectedTextCommand = vscode.commands.registerCommand('extension.sealKubeSecretSelectedText', async () => {
-		let editor = vscode.window.activeTextEditor;
+		const editor = vscode.window.activeTextEditor;
 
 		if (editor) {
-			let document = editor.document;
-			let selection = editor.selection;
-			const kubesealPath = getKubesealExectutablePath();
+			const document = editor.document
+			const selection = editor.selection
 			
-			const defaults = collectSealSelectedTextDefaults(context, document);
-			console.log("defaults", defaults)
-			let userInput = await collectSealSelectedTextUserInput(context, defaults.defaultName, defaults.defaultNamespace, defaults.defaultCertificatePath); 
-			console.log("userInput", userInput);
-			let plainTextSecret = document.getText(selection);
+			const defaults = collectSealSelectedTextDefaults(context, document)
+			const userInput = await collectSealSelectedTextUserInput(context, defaults.defaultName, defaults.defaultNamespace, defaults.defaultCertificatePath)
+			const plainTextSecret = document.getText(selection);
 
-			let sealedSecret = 
+			const sealedSecret = 
 				await sealSecretRaw(
-					kubesealPath,
+					extensionState.kubeSealPath,
 					userInput.certificatePath,
 					plainTextSecret,
 					userInput.scope,
@@ -97,14 +100,15 @@ export function activate(context: vscode.ExtensionContext) {
 					);
 
 			editor.edit(editBuilder => {
-				editBuilder.replace(selection, sealedSecret);
+				editBuilder.replace(selection, sealedSecret)
 			});
 		}
 	});
 
-	context.subscriptions.push(sealKubeSecretSelectedTextCommand);
+	context.subscriptions.push(sealKubeSecretSelectedTextCommand)
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+	console.log('Deactivating kubeseal extension');
+}
 

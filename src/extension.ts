@@ -3,6 +3,8 @@ import * as path from 'path';
 import { collectSealSelectedTextUserInput } from './userInput';
 import { sealSecretRaw, sealSecretFile } from './seal';
 import { collectSealSelectedTextDefaults } from './defaults';
+import * as os from 'os';
+import * as fs from 'fs';
 
 let extensionState = {
 	kubeSealPath: ''
@@ -13,17 +15,28 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Activating kubeseal extension');
 
 	function initializeConfiguration() {
-		console.log("Initialize configuration")
 		const kubesealConfiguration = vscode.workspace.getConfiguration('kubeseal')
-		extensionState.kubeSealPath = kubesealConfiguration.get<string>('executablePath') || path.join(context.extensionPath, 'bin', 'kubeseal.exe')
+		const configuredKubeSealPath = kubesealConfiguration.get<string>('executablePath')
+		if (os.platform() == 'win32') {
+			extensionState.kubeSealPath = configuredKubeSealPath || path.join(context.extensionPath, 'bin', 'kubeseal.exe')
+		} else {
+			if (configuredKubeSealPath) {
+				extensionState.kubeSealPath = configuredKubeSealPath
+			}
+			else {
+				vscode.window.showErrorMessage('kubeseal.executablePath not set')
+			}
+		}
+
+		if (!fs.existsSync(extensionState.kubeSealPath)) {
+			vscode.window.showErrorMessage(`kubeseal.executablePath is set to ${extensionState.kubeSealPath} which does not exist`)
+		}
 	}
 
 	initializeConfiguration()
 
 	const configSubscription = vscode.workspace.onDidChangeConfiguration(e => {
-		console.log('onDidChangeConfiguration')
 		if (e.affectsConfiguration('kubeseal')) {
-			console.log('onDidChangeConfiguration affects kubeseal')
 			initializeConfiguration()
         }
 	});

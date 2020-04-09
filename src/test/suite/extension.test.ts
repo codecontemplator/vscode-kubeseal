@@ -1,4 +1,11 @@
 import * as assert from 'assert';
+import * as vscode from 'vscode';
+import sinon, { stubInterface  } from "ts-sinon";
+//import Sinon = require('sinon');
+import * as mocha from "mocha";
+import * as fs from 'fs';
+import * as tmp from 'tmp';
+import * as path from 'path'
 
 // https://code.visualstudio.com/api/working-with-extensions/testing-extension
 // https://github.com/microsoft/vscode-java-dependency/tree/master/test
@@ -7,23 +14,19 @@ import * as assert from 'assert';
 // https://github.com/microsoft/vscode-extension-samples/blob/master/quickinput-sample/src/quickOpen.ts
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
-import * as vscode from 'vscode';
-// import * as myExtension from '../extension';
-//import * as sinon from 'sinon';
-import sinon, { stubInterface  } from "ts-sinon";
-import Sinon = require('sinon');
 
-import * as mocha from "mocha";
-import * as fs from 'fs';
-import * as tmp from 'tmp';
-import * as path from 'path'
+// function delay(ms: number) {
+// 	return new Promise( resolve => setTimeout(resolve, ms) );
+// }
+
 
 suite('Extension Test Suite', () => {
+
 	vscode.window.showInformationMessage('Start all tests.');
 
-	let createQuickPickStub : Sinon.SinonStub; 
-	let createInputBoxStub : Sinon.SinonStub;  
-	let fileExistsSyncStub : Sinon.SinonStub;  
+	let createQuickPickStub : sinon.SinonStub; 
+	let createInputBoxStub : sinon.SinonStub;  
+	let fileExistsSyncStub : sinon.SinonStub;  
 	
 	mocha.beforeEach(() => {
 		createQuickPickStub = sinon.stub(vscode.window, 'createQuickPick')
@@ -38,11 +41,6 @@ suite('Extension Test Suite', () => {
 		//sinon.restore();
 	});
 	  	
-	test('Sample test', () => {
-		assert.equal(-1, [1, 2, 3].indexOf(5));
-		assert.equal(-1, [1, 2, 3].indexOf(0));
-	});
-
     test("Extension should be present", () => {
         assert.ok(vscode.extensions.getExtension('codecontemplator.kubeseal'));
 	});	
@@ -54,18 +52,9 @@ suite('Extension Test Suite', () => {
 		
 	test('Convert secret file to sealed secret file', async () => {
 
-		console.log("================= hej ==============")
-		const extension = await vscode.extensions.getExtension('codecontemplator.kubeseal')
-		if (extension) {
-			console.log("activating...", extension.isActive)
-			extension.activate();
-		} else {
-			console.log("not found")
-		}
-		
+		// Setup mocks		
 		fileExistsSyncStub.callsFake(() => true);
 		
-		//const createQuickPickStub = sinon.stub(vscode.window, 'createQuickPick');
         createQuickPickStub.callsFake(() => {
 			var quickPickStub = stubInterface<vscode.QuickPick<any>>();
 			quickPickStub.onDidChangeSelection.callsFake(handler => {
@@ -106,7 +95,11 @@ suite('Extension Test Suite', () => {
 			return inputBoxStub;
 		});
 				
-		const secretFileContent = `
+		const temporaryFile = tmp.fileSync();
+		try
+		{
+			// Create a temporary file with a kubernetes secret that will be transformed into a sealed secret
+			fs.writeFileSync(temporaryFile.name, `
 apiVersion: v1
 kind: Secret
 metadata:
@@ -116,30 +109,27 @@ type: Opaque
 data:
   username: YWRtaW4=
   password: MWYyZDFlMmU2N2Rm
-`;
+`);
 
-		function delay(ms: number) {
-			return new Promise( resolve => setTimeout(resolve, ms) );
-		}
-
-		const temporaryFile = tmp.fileSync();
-		try
-		{
-			console.log("temp file ", temporaryFile.name)
-			fs.writeFileSync(temporaryFile.name, secretFileContent);
+			// Activate extension
+			const extension = await vscode.extensions.getExtension('codecontemplator.kubeseal')
+			await extension?.activate()
 	
-			const origdoccount=  vscode.workspace.textDocuments.length;
-			console.log("len=",vscode.workspace.textDocuments.length);
+			// Close all editors to get a good initial state
+			await vscode.commands.executeCommand('workbench.action.closeAllEditors')
+			assert.equal(vscode.workspace.textDocuments.length, 0)
+
+			// Open secret file
 			const textDocument = await vscode.workspace.openTextDocument(temporaryFile.name) //({ content: secretFileContent })
 			await vscode.window.showTextDocument(textDocument);
-			console.log("len=",vscode.workspace.textDocuments.length);
-			
-
 			assert.notEqual(textDocument, null);
-			//assert.equal(vscode.workspace.textDocuments.length, origdoccount + 1);
-			await vscode.commands.executeCommand('extension.sealKubeSecretFile');
-			//assert.equal(vscode.workspace.textDocuments.length, 2);
+			assert.equal(vscode.workspace.textDocuments.length, 1)			
 
+			// Execute seal secret file command - This is our 'act' step
+			await vscode.commands.executeCommand('extension.sealKubeSecretFile');
+
+			// Assert expected result
+			assert.equal(vscode.workspace.textDocuments.length, 2);
 		}
 		finally
 		{

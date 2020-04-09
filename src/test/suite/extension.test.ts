@@ -16,6 +16,7 @@ import Sinon = require('sinon');
 import * as mocha from "mocha";
 import * as fs from 'fs';
 import * as tmp from 'tmp';
+import * as path from 'path'
 
 suite('Extension Test Suite', () => {
 	vscode.window.showInformationMessage('Start all tests.');
@@ -71,7 +72,7 @@ suite('Extension Test Suite', () => {
 				switch(quickPickStub.placeholder)
 				{
 					case 'Select scope':
-						const selectedItem = quickPickStub.items[1];
+						const selectedItem = quickPickStub.items[0] //.find(x => true); //TODO
 						return handler([selectedItem]);
 					default:
 						throw 'Unhandled quick pick';
@@ -92,7 +93,9 @@ suite('Extension Test Suite', () => {
 						inputBoxStub.value = 'fake-namespace';
 						break;
 					case 'Specify certificate path':
-						inputBoxStub.value = 'fake-cert.pem';
+						const x = path.resolve(__dirname, '../../../example/cert.pem')
+						console.log("path=",x)
+						inputBoxStub.value = x; //'fake-cert.pem';
 						break;
 					default:
 						throw 'Unhandled input box';
@@ -107,13 +110,13 @@ suite('Extension Test Suite', () => {
 apiVersion: v1
 kind: Secret
 metadata:
-	name: exampleSecret
-	namespace: exampleNamespace
+  name: exampleSecret
+#  namespace: exampleNamespace
 type: Opaque
 data:
-	username: YWRtaW4=
-	password: MWYyZDFlMmU2N2Rm				
-		`;
+  username: YWRtaW4=
+  password: MWYyZDFlMmU2N2Rm
+`;
 
 		function delay(ms: number) {
 			return new Promise( resolve => setTimeout(resolve, ms) );
@@ -131,12 +134,12 @@ data:
 			await vscode.window.showTextDocument(textDocument);
 			console.log("len=",vscode.workspace.textDocuments.length);
 			
-			//await delay(10000);
 
 			assert.notEqual(textDocument, null);
 			//assert.equal(vscode.workspace.textDocuments.length, origdoccount + 1);
 			await vscode.commands.executeCommand('extension.sealKubeSecretFile');
-			//assert.equal(vscode.workspace.textDocuments.length, 2);	
+			//assert.equal(vscode.workspace.textDocuments.length, 2);
+
 		}
 		finally
 		{

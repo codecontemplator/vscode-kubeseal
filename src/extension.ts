@@ -25,10 +25,24 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	let sealKubeSecretFileCommand = vscode.commands.registerCommand('extension.sealKubeSecretFile', async () => {
+
+		console.log ("executing sealKubeSecretFile")
+		
 		let editor = vscode.window.activeTextEditor;
 
 		if (editor) {
-			let document = editor.document;
+
+			if (editor.document.isDirty || editor.document.isUntitled) {
+				await vscode.commands.executeCommand('workbench.action.files.saveAs', "Hej");
+				//const fileInfo = await vscode.window.showSaveDialog({...options})
+			}
+
+			if (editor.document.isDirty || editor.document.isUntitled) {
+				return; // user aborted save
+			}			
+
+			const document = editor.document;
+
 			const kubesealPath = getKubesealExectutablePath();
 			// TODO: implement good defaults
 			//const defaults = collectSealSelectedTextDefaults(context, document);

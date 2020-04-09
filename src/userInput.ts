@@ -1,5 +1,5 @@
 // Ref: https://github.com/microsoft/vscode-extension-samples/blob/master/quickinput-sample/src/multiStepInput.ts
-import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri } from 'vscode';
+import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri, QuickPick } from 'vscode';
 import { Scope } from './types';
 import * as fs from 'fs';
 
@@ -257,7 +257,9 @@ class MultiStepInput {
 				this.current.show();
 			});
 		} finally {
-			disposables.forEach(d => d.dispose());
+			disposables.forEach(d => {
+				if (d && typeof d.dispose == 'function') { d.dispose() }				
+			});
 		}
 	}
 
@@ -316,7 +318,9 @@ class MultiStepInput {
 				this.current.show();
 			});
 		} finally {
-			disposables.forEach(d => d.dispose());
+			disposables.forEach(d => {
+				if (d  && typeof d.dispose == 'function') { d.dispose() }				
+			});
 		}
 	}
 }

@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as tmp from 'tmp';
 import * as path from 'path'
 import * as yaml from 'js-yaml'
+import { Scope } from '../../types'
 
 // https://code.visualstudio.com/api/working-with-extensions/testing-extension
 // https://github.com/microsoft/vscode-java-dependency/tree/master/test
@@ -57,13 +58,15 @@ suite('Extension Test Suite', () => {
 		fileExistsSyncStub.callsFake(() => true);
 		
         createQuickPickStub.callsFake(() => {
-			var quickPickStub = stubInterface<vscode.QuickPick<any>>();
+			var quickPickStub = stubInterface<vscode.QuickPick<vscode.QuickPickItem>>();
 			quickPickStub.onDidChangeSelection.callsFake(handler => {
 				switch(quickPickStub.placeholder)
 				{
 					case 'Select scope':
-						const selectedItem = quickPickStub.items[0] //.find(x => true); //TODO
-						return handler([selectedItem]);
+						const selectedItem = quickPickStub.items.find(x => x.label == Scope[Scope.strict]);
+						const items = [];
+						if (selectedItem) items.push(selectedItem);
+						return handler(items);
 					default:
 						throw 'Unhandled quick pick';
 				}
@@ -83,9 +86,7 @@ suite('Extension Test Suite', () => {
 						inputBoxStub.value = 'fake-namespace';
 						break;
 					case 'Specify certificate path':
-						const x = path.resolve(__dirname, '../../../example/cert.pem')
-						console.log("path=",x)
-						inputBoxStub.value = x; //'fake-cert.pem';
+						inputBoxStub.value = path.resolve(__dirname, '../../../example/cert.pem')
 						break;
 					default:
 						throw 'Unhandled input box';

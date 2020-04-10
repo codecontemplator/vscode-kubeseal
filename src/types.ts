@@ -1,7 +1,7 @@
 export enum Scope {
-    strict,
-    namespaceWide,
-    clusterWide
+    strict = 1,
+    namespaceWide = 2,
+    clusterWide = 3
 }
 
 export interface SealSecretParameters {

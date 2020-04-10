@@ -27,6 +27,11 @@ export async function collectSealSecretUserInput(
 		state.name = defaults?.name
 		state.namespace = defaults?.namespace
 		state.certificatePath = defaults?.certificatePath
+		if (defaults?.scope) {
+			state.scopeValue = defaults?.scope
+			state.scope = scopes[defaults?.scope - 1]
+		}
+
 		await MultiStepInput.run(input => pickScope(input, state));
 		return state as State;
 	}
@@ -126,7 +131,7 @@ export async function collectSealSecretUserInput(
 	const state = await collectInputs();
 	//window.showInformationMessage(`Sealing secret ${state.name} ${state.namespace} ${state.scope.label}`);
 	return {
-		scope: state.scopeValue || Scope.strict,
+		scope: state.scopeValue,
 		name: state.name,
 		namespace: state.namespace,
 		certificatePath: state.certificatePath

@@ -90,4 +90,20 @@ status: {}
         assert.equal(result.scope, Scope.clusterWide)
     });
 
+    test("Should extract defaults from path for params.libsonnet documents", () => {
+
+        const context = stubInterface<ExtensionContext>()
+        const document = <TextDocument>{
+            fileName: 'X:\\Develop\\kube-applications-state\\apps\\solutions\\reportgenerator\\uat\\params.libsonnet',
+            isUntitled: false
+        };
+        
+        // Act
+        const result = collectSealSecretDefaults(context, document)
+
+        // Assert
+        assert.equal(result.name, 'reportgenerator')
+        assert.equal(result.namespace, 'solutions-reportgenerator')
+        assert.equal(result.scope, Scope.strict)
+    });
 });

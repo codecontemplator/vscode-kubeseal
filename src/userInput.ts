@@ -49,7 +49,6 @@ export async function collectSealSecretUserInput(
 			shouldResume: shouldResume
 		});
 
-		console.log(state.scope.label);
 		switch(state.scope.label) {
 			case Scope[Scope.strict]:
 				state.scopeValue = Scope.strict;

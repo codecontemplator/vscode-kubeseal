@@ -52,7 +52,7 @@ data:
         assert.equal(result.namespace, 'secretNamespace')
     });
 
-    test("Should extract name and namespace from sealed secret yaml if available", () => {
+    test("Should extract name and namespace and scope from sealed secret yaml if available", () => {
 
         // Arrange
         const context = stubInterface<ExtensionContext>()
@@ -61,6 +61,8 @@ data:
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
+    annotations:
+        sealedsecrets.bitnami.com/cluster-wide: "true"
     creationTimestamp: null
     name: secretName
     namespace: secretNamespace
@@ -70,6 +72,8 @@ spec:
     username: AQDu75w/X9mE2op1piAPwWV+pXTiag+XVQKKf9H4uxCxHJEp6//A31jB1KcFaMpWhBcPilBZQbPibnYKosnUuaBJTi9edxc7DMwa8h+pdc9D17N0vfHE9HBoRN6ydMuZGo4/oY6weigxkR/jaUXsDMT6JEhazZqUdKUsDqPQ1bkZAB13KLlf9c22MW6XbYz5MnJgW9c06mLgzZg3BASe6gDeM2KrO3AEaTsV81pY6G+r000+O9AmEBpa90hwHz0OlgrLfnAVrweVkRVN7uPETwWi7f3EDNff9ZCVF4um26Qr4oVQ3OsjSNwaTSxhuK8LTK9zV/lFLLmK0GvSOOluluGpSTjAFwprNVJ4Y3etig+T0y47+CFr
     template:
     metadata:
+        annotations:
+            sealedsecrets.bitnami.com/cluster-wide: "true"
         creationTimestamp: null
         name: secretName
         namespace: secretNamespace
@@ -83,6 +87,7 @@ status: {}
         // Assert
         assert.equal(result.name, 'secretName')
         assert.equal(result.namespace, 'secretNamespace')
+        assert.equal(result.scope, Scope.clusterWide)
     });
 
 });

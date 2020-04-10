@@ -24,7 +24,7 @@ import { Scope } from '../../types'
 
 suite('Extension Test Suite', () => {
 
-	vscode.window.showInformationMessage('Start all tests.');
+	//vscode.window.showInformationMessage('Start all tests.');
 
 	let createQuickPickStub : sinon.SinonStub; 
 	let createInputBoxStub : sinon.SinonStub;  

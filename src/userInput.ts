@@ -1,21 +1,12 @@
 // Ref: https://github.com/microsoft/vscode-extension-samples/blob/master/quickinput-sample/src/multiStepInput.ts
 import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri, QuickPick } from 'vscode';
-import { Scope } from './types';
+import { Scope, SealSecretParameters } from './types';
 import * as fs from 'fs';
 
-export interface CollectSealSelectedTextUserInputResult {
-	scope: Scope;
-	name: string | null;
-	namespace: string | null;
-	certificatePath: string;
-}
-
-export async function collectSealSelectedTextUserInput(
+export async function collectSealSecretUserInput(
 		context: ExtensionContext, 
-		defaultName: string | null = null, 
-		defaultNamespace: string | null = null,
-		defaultCertificatePath: string | null = null
-	) : Promise<CollectSealSelectedTextUserInputResult> {
+		defaults: SealSecretParameters | null
+	) : Promise<SealSecretParameters> {
 
 	const scopes: QuickPickItem[] = [Scope.strict, Scope.namespaceWide, Scope.clusterWide].map(scope => ({ label: Scope[scope] }));
 	// Object.keys(Scope).map(label => ({ label }));
@@ -32,10 +23,10 @@ export async function collectSealSelectedTextUserInput(
 	}
 
 	async function collectInputs() {
-		const state = { } as Partial<State>;
-		if (defaultName) state.name = defaultName;
-		if (defaultNamespace) state.namespace = defaultNamespace;
-		if (defaultCertificatePath) state.certificatePath = defaultCertificatePath;		
+		const state = { } as Partial<State>
+		state.name = defaults?.name
+		state.namespace = defaults?.namespace
+		state.certificatePath = defaults?.certificatePath
 		await MultiStepInput.run(input => pickScope(input, state));
 		return state as State;
 	}

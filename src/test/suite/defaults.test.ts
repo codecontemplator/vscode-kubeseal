@@ -76,7 +76,7 @@ spec:
     template:
     metadata:
         annotations:
-            sealedsecrets.bitnami.com/cluster-wide: "true"
+            ${annotation}
         creationTimestamp: null
         name: secretName
         namespace: secretNamespace

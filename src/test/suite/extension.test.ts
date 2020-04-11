@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import sinon, { stubInterface  } from "ts-sinon";
+import sinon, { stubInterface } from "ts-sinon";
 import { beforeEach, afterEach } from "mocha";
 import * as fs from 'fs';
 import * as tmp from 'tmp';
@@ -8,40 +8,39 @@ import * as path from 'path'
 import * as yaml from 'js-yaml'
 import { Scope } from '../../types'
 
-function delay(timeInMilliSeconds : number) {
+function delay(timeInMilliSeconds: number) {
 	return new Promise(res => setTimeout(res, timeInMilliSeconds))
 }
 
 suite('Extension Test Suite', () => {
 
-	let createQuickPickStub : sinon.SinonStub; 
-	let createInputBoxStub : sinon.SinonStub;  
-	
+	let createQuickPickStub: sinon.SinonStub;
+	let createInputBoxStub: sinon.SinonStub;
+
 	beforeEach(() => {
 		createQuickPickStub = sinon.stub(vscode.window, 'createQuickPick')
 		createInputBoxStub = sinon.stub(vscode.window, 'createInputBox')
 	});
-	  	
+
 	afterEach(() => {
 		createQuickPickStub.restore();
 		createInputBoxStub.restore();
 	});
-	  	
-    test("Extension should be present", () => {
-        assert.ok(vscode.extensions.getExtension('codecontemplator.kubeseal'));
-	});	
-	
-    test("Extension should activate", async () => {
+
+	test("Extension should be present", () => {
+		assert.ok(vscode.extensions.getExtension('codecontemplator.kubeseal'));
+	});
+
+	test("Extension should activate", async () => {
 		const extension = await vscode.extensions.getExtension('codecontemplator.kubeseal')
 		await extension?.activate()
 	});
-		
+
 	function setupQuickPickStub() {
-        createQuickPickStub.callsFake(() => {
+		createQuickPickStub.callsFake(() => {
 			var quickPickStub = stubInterface<vscode.QuickPick<vscode.QuickPickItem>>();
 			quickPickStub.onDidChangeSelection.callsFake(handler => {
-				switch(quickPickStub.placeholder)
-				{
+				switch (quickPickStub.placeholder) {
 					case 'Select scope':
 						const selectedItem = quickPickStub.items.find(x => x.label == Scope[Scope.strict]);
 						const items = [];
@@ -59,8 +58,7 @@ suite('Extension Test Suite', () => {
 		createInputBoxStub.callsFake(() => {
 			var inputBoxStub = stubInterface<vscode.InputBox>();
 			inputBoxStub.onDidAccept.callsFake(asyncHandler => {
-				switch(inputBoxStub.prompt)
-				{
+				switch (inputBoxStub.prompt) {
 					case 'Specify name':
 						inputBoxStub.value = 'fake-name';
 						break;
@@ -84,10 +82,9 @@ suite('Extension Test Suite', () => {
 
 		setupQuickPickStub()
 		setupInputBoxStub()
-				
+
 		const temporaryFile = tmp.fileSync();
-		try
-		{
+		try {
 			// Create a temporary file with a kubernetes secret that will be transformed into a sealed secret
 			fs.writeFileSync(temporaryFile.name, `
 apiVersion: v1
@@ -104,7 +101,7 @@ data:
 			// Activate extension
 			const extension = await vscode.extensions.getExtension('codecontemplator.kubeseal')
 			await extension?.activate()
-	
+
 			// Close all editors to get a good initial state
 			await vscode.commands.executeCommand('workbench.action.closeAllEditors')
 			assert.equal(vscode.workspace.textDocuments.length, 0)
@@ -113,7 +110,7 @@ data:
 			const textDocument = await vscode.workspace.openTextDocument(temporaryFile.name) //({ content: secretFileContent })
 			await vscode.window.showTextDocument(textDocument)
 			assert.notEqual(textDocument, null);
-			assert.equal(vscode.workspace.textDocuments.length, 1)			
+			assert.equal(vscode.workspace.textDocuments.length, 1)
 
 			// Execute seal secret file command - This is our 'act' step
 			await vscode.commands.executeCommand('extension.sealKubeSecretFile')
@@ -131,8 +128,7 @@ data:
 			assert.ok(yamlResult.spec.encryptedData.password)
 			assert.ok(yamlResult.spec.encryptedData.username)
 		}
-		finally
-		{
+		finally {
 			temporaryFile.removeCallback();
 		}
 	});
@@ -147,7 +143,7 @@ data:
 		const textDocument = await vscode.workspace.openTextDocument({ content: 'aSecretValue' })
 		await vscode.window.showTextDocument(textDocument)
 		await vscode.commands.executeCommand('editor.action.selectAll')
-		
+
 		// Act
 		await vscode.commands.executeCommand('extension.sealKubeSecretSelectedText')
 		await delay(10) // Need to wait a little bit for the text buffer to get updated

@@ -72,7 +72,7 @@ The plugin ships a prebuilt version of kubeseal for windows. On other platform k
 
 ## Known Issues
 
-This extension is very much work in progress. Especially the file creation command where the ui does not really make perfect sense yet.
+This extension is very much work in progress. 
 
 ## Release Notes
 

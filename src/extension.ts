@@ -75,12 +75,16 @@ export function activate(context: vscode.ExtensionContext) {
 				return
 			}
 
-			let sealedSecret = await sealSecretFile(extensionState.kubeSealPath, document.fileName, extensionState.sealSecretParams)
-
-			const textDocument = await vscode.workspace.openTextDocument({ content: sealedSecret })
-			if (textDocument) {
-				await vscode.window.showTextDocument(textDocument, { viewColumn: vscode.ViewColumn.Beside })
-			}		
+			try {
+				const sealedSecret = await sealSecretFile(extensionState.kubeSealPath, document.fileName, extensionState.sealSecretParams)
+				const textDocument = await vscode.workspace.openTextDocument({ content: sealedSecret })
+				if (textDocument) {
+					await vscode.window.showTextDocument(textDocument, { viewColumn: vscode.ViewColumn.Beside })
+				}		
+			} 
+			catch (error) {
+				vscode.window.showErrorMessage(error || "An unknown error occurred");
+			}
 		}
 	});
 	
@@ -106,11 +110,17 @@ export function activate(context: vscode.ExtensionContext) {
 			extensionState.sealSecretParams = collectSealSecretDefaults(context, document, extensionState.sealSecretParams)
 			extensionState.sealSecretParams = await collectSealSecretUserInput(context, extensionState.sealSecretParams)
 			const plainTextSecret = document.getText(selection);
-			const sealedSecret = await sealSecretRaw(extensionState.kubeSealPath, plainTextSecret, extensionState.sealSecretParams);
 
-			editor.edit(editBuilder => {
-				editBuilder.replace(selection, sealedSecret)
-			});
+			try {
+				const sealedSecret = await sealSecretRaw(extensionState.kubeSealPath, plainTextSecret, extensionState.sealSecretParams);
+	
+				editor.edit(editBuilder => {
+					editBuilder.replace(selection, sealedSecret)
+				});
+			}
+			catch(error) {
+				vscode.window.showErrorMessage(error || "An unknown error occurred");
+			}
 		}
 	});
 

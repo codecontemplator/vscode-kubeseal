@@ -87,3 +87,7 @@ Added tests. Improved default parameters. Miscellaneous fixes.
 ### 0.0.3
 
 Improved select certificate dialog
+
+### 0.0.4
+
+Improved error handling and error messages when underlying command execution fails

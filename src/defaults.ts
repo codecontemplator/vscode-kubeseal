@@ -1,76 +1,61 @@
-import { ExtensionContext, TextDocument } from 'vscode';
-import * as path from 'path';
+import { ExtensionContext, TextDocument } from 'vscode'
+import * as yaml from 'js-yaml'
+import { SealSecretParameters, Scope } from './types'
+import * as path from 'path'
 
-export interface CollectSealSelectedTextDefaultsResult {
-    defaultCertificatePath: string | null;
-    defaultName: string | null;
-    defaultNamespace: string | null;
-}
-
-// TODO: make generic
-
-// Idea:
-/*
-defaults: {
-    name: {
-        filenameSelector: {
-            regex: "^(?<root>.+?[\\\/]kube-applications-state)[\\\/]apps[\\\/](?<team>.+?)[\\\/](?<appName>.+?)[\\\/]"
-        },
-        documentSelector: {
-            yamlPath: {
-                namespace: "hash.child_attr.key"
-            } 
-        },
-        value: "${appName}"
-    },
-    namespace: {
-        regex: "^(?<root>.+?[\\\/]kube-applications-state)[\\\/]apps[\\\/](?<team>.+?)[\\\/](?<appName>.+?)[\\\/]",
-        value: "${team}-${appName}"
-    },
-    certificatePath: [
-        {
-            filenameSelector: {
-                regex: "^(?<root>.+?[\\\/]kube-applications-state)[\\\/]apps[\\\/](?<team>.+?)[\\\/](?<appName>.+?)[\\\/]prod[\\\/]"
-            },
-            value: "${root}/sealed-secrets/prod.pem"
-        },
-        {
-            filenameSelector: {
-                regex: "^(?<root>.+?[\\\/]kube-applications-state)"
-            },
-            value: "${root}/sealed-secrets/nonprod.pem"
-        },
-    ]
-}
-
-documentSelector - low prio for now
-
-semantics: if the selectors are not successful not value is generated
-if multiple defaults are provides the first one that provides a value will be used
-
-
-*/
-export function collectSealSelectedTextDefaults(context : ExtensionContext, document : TextDocument) : CollectSealSelectedTextDefaultsResult {
-
-    let docFilename = path.normalize(document.fileName).replace(/\\/, '/')
-    //docFilename = "C:\\Develop\\kube-applications-state\\apps\\solutions\\kyc\\test\\params.libsonnet";	
-    console.log("normalized doc filename", docFilename)
-    const parts = docFilename.split(/[\\\/]/)
-    parts.reverse()
-
-    const environment = parts[1];
-    const rootPath = /.+?kube-applications-state/.exec(docFilename)
-    let certPath : string | null = null;
-    if (rootPath) {
-        certPath = path.join(rootPath?.toString(), "sealed-secrets", environment == 'prod' ? 'prod.pem' : 'nonprod.pem')
+export function collectSealSecretDefaults(context : ExtensionContext, document : TextDocument, lastUsed : SealSecretParameters | null = null) : SealSecretParameters {
+    
+    // Create result structure 
+    let result = lastUsed || {
+        certificatePath: undefined,
+        name: undefined,
+        namespace: undefined,
+        scope: undefined
     }
     
-    const appName = parts[2]
-    const teamName = parts[3]
+    // Special case for for libsonnet files. TODO: should be generalized
+    if (!document.isUntitled && path.basename(document.fileName) === 'params.libsonnet')
+    {
+        // Default scope is assumed to be strict in this case
+        result.scope = Scope.strict
 
-    return {
-        defaultCertificatePath: certPath,
-        defaultName: appName,
-        defaultNamespace: `${teamName}-${appName}`
-    };
+        // Try to extract parameters from path
+        const pathParts = path.dirname(document.fileName).split(path.sep)
+        const pathPartsRev = pathParts.slice().reverse();
+
+        // Validate
+        if (pathPartsRev.length >= 4 && pathPartsRev[3] === 'apps')
+        {
+            const envName = pathPartsRev[0]
+            const appName = pathPartsRev[1]
+            const teamName = pathPartsRev[2]
+            const root = pathParts.slice().splice(0, pathParts.length - 4).join(path.sep)
+            
+            result.name = appName
+            result.namespace = `${teamName}-${appName}`
+            result.certificatePath = path.join(root, 'sealed-secrets', envName === 'prod' ? 'prod.pem' : 'nonprod.pem')
+        }
+    }
+    else
+    {
+        // Try to extract name, namespace and scope from document
+        try {
+            const documentText = document.getText()
+            const documentDom = yaml.safeLoad(documentText)
+            result.name = documentDom?.metadata?.name
+            result.namespace = documentDom?.metadata?.namespace
+            const annotations = documentDom?.metadata?.annotations;
+            if (annotations && annotations['sealedsecrets.bitnami.com/cluster-wide'] === 'true') 
+                result.scope = Scope.clusterWide
+            else if (annotations && annotations['sealedsecrets.bitnami.com/namespace-wide'] === 'true')
+                result.scope = Scope.namespaceWide
+            else if (documentDom?.metadata)
+                result.scope = Scope.strict
+            } 
+        catch(error) {
+        }
+    }
+    
+    // Return
+    return result
 }

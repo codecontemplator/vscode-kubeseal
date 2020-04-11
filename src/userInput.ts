@@ -1,21 +1,20 @@
 // Ref: https://github.com/microsoft/vscode-extension-samples/blob/master/quickinput-sample/src/multiStepInput.ts
-import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri } from 'vscode';
-import { Scope } from './types';
+import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri, QuickPick, workspace, ThemeIcon } from 'vscode';
+import { Scope, SealSecretParameters } from './types';
 import * as fs from 'fs';
 
-export interface CollectSealSelectedTextUserInputResult {
-	scope: Scope;
-	name: string | null;
-	namespace: string | null;
-	certificatePath: string;
-}
-
-export async function collectSealSelectedTextUserInput(
+export async function collectSealSecretUserInput(
 		context: ExtensionContext, 
-		defaultName: string | null = null, 
-		defaultNamespace: string | null = null,
-		defaultCertificatePath: string | null = null
-	) : Promise<CollectSealSelectedTextUserInputResult> {
+		defaults: SealSecretParameters | null
+	) : Promise<SealSecretParameters> {
+
+	class SimpleButton implements QuickInputButton {
+		constructor(public iconPath: ThemeIcon, public tooltip: string) { }
+	}
+
+	// Theme icons: https://microsoft.github.io/vscode-codicons/dist/codicon.html
+	const pickCertificateFromWorkspaceButton = new SimpleButton(
+		new ThemeIcon('go-to-file'), 'Pick certificate from workspace');
 
 	const scopes: QuickPickItem[] = [Scope.strict, Scope.namespaceWide, Scope.clusterWide].map(scope => ({ label: Scope[scope] }));
 	// Object.keys(Scope).map(label => ({ label }));
@@ -32,10 +31,15 @@ export async function collectSealSelectedTextUserInput(
 	}
 
 	async function collectInputs() {
-		const state = { } as Partial<State>;
-		if (defaultName) state.name = defaultName;
-		if (defaultNamespace) state.namespace = defaultNamespace;
-		if (defaultCertificatePath) state.certificatePath = defaultCertificatePath;		
+		const state = { } as Partial<State>
+		state.name = defaults?.name
+		state.namespace = defaults?.namespace
+		state.certificatePath = defaults?.certificatePath
+		if (defaults?.scope) {
+			state.scopeValue = defaults?.scope
+			state.scope = scopes[defaults?.scope - 1]
+		}
+
 		await MultiStepInput.run(input => pickScope(input, state));
 		return state as State;
 	}
@@ -45,15 +49,12 @@ export async function collectSealSelectedTextUserInput(
 	async function pickScope(input: MultiStepInput, state: Partial<State>) {
 		state.scope = await input.showQuickPick({
 			title,
-			step: 1,
-			totalSteps: 2,
 			placeholder: 'Select scope',
 			items: scopes,
 			activeItem: state.scope,
 			shouldResume: shouldResume
 		});
 
-		console.log(state.scope.label);
 		switch(state.scope.label) {
 			case Scope[Scope.strict]:
 				state.scopeValue = Scope.strict;
@@ -70,8 +71,6 @@ export async function collectSealSelectedTextUserInput(
 	async function inputName(input: MultiStepInput, state: Partial<State>) {
 		state.name = await input.showInputBox({
 			title,
-			step: 2,
-			totalSteps: 4,
 			value: state.name || '',
 			prompt: 'Specify name',
 			validate: validateName,
@@ -83,8 +82,6 @@ export async function collectSealSelectedTextUserInput(
 	async function inputNamespace(input: MultiStepInput, state: Partial<State>) {
 		state.namespace = await input.showInputBox({
 			title,
-			step: state.scopeValue === Scope.strict ? 3 : 2,
-			totalSteps: state.scopeValue === Scope.strict ? 4 : 3,
 			value: state.namespace || '',
 			prompt: 'Specify namespace',
 			validate: validateNamespace,
@@ -95,15 +92,34 @@ export async function collectSealSelectedTextUserInput(
 	}
 
 	async function inputCertificatePath(input: MultiStepInput, state: Partial<State>) {
-		state.certificatePath = await input.showInputBox({
+		let pick = await input.showInputBox({
 			title,
-			step: state.scopeValue === Scope.strict ? 3 : 3,
-			totalSteps: state.scopeValue === Scope.strict ? 4 : 4,
 			value: state.certificatePath || '',
 			prompt: 'Specify certificate path',
+			buttons: [pickCertificateFromWorkspaceButton],
 			validate: validateCertificatePath,
 			shouldResume: shouldResume
 		});
+
+		if (pick instanceof SimpleButton) {
+			return (input: MultiStepInput) => pickCertificatePathFromSolution(input, state);
+		} else {
+			state.certificatePath = pick
+		}
+	}
+
+	async function pickCertificatePathFromSolution(input: MultiStepInput, state: Partial<State>) {
+		let files = await workspace.findFiles('**/*.pem')
+		let items = files.map(x => ({ label: x.path.replace(/^\/([A-Za-z]{1,2}:)/, '$1') }))  // getting rid of initial slash since we get /c:/some-path 
+		let pick = await input.showQuickPick({
+			title,
+			placeholder: 'Select certificate',
+			items: items,
+			activeItem: state.scope,
+			shouldResume: shouldResume
+		});
+
+		state.certificatePath = pick.label
 	}
 
 	function shouldResume() {
@@ -135,7 +151,7 @@ export async function collectSealSelectedTextUserInput(
 	const state = await collectInputs();
 	//window.showInformationMessage(`Sealing secret ${state.name} ${state.namespace} ${state.scope.label}`);
 	return {
-		scope: state.scopeValue || Scope.strict,
+		scope: state.scopeValue,
 		name: state.name,
 		namespace: state.namespace,
 		certificatePath: state.certificatePath
@@ -159,8 +175,8 @@ type InputStep = (input: MultiStepInput) => Thenable<InputStep | void>;
 
 interface QuickPickParameters<T extends QuickPickItem> {
 	title: string;
-	step: number;
-	totalSteps: number;
+	step?: number;
+	totalSteps?: number;
 	items: T[];
 	activeItem?: T;
 	placeholder: string;
@@ -170,8 +186,8 @@ interface QuickPickParameters<T extends QuickPickItem> {
 
 interface InputBoxParameters {
 	title: string;
-	step: number;
-	totalSteps: number;
+	step?: number;
+	totalSteps?: number;
 	value: string;
 	prompt: string;
 	validate: (value: string) => Promise<string | undefined>;
@@ -257,7 +273,9 @@ class MultiStepInput {
 				this.current.show();
 			});
 		} finally {
-			disposables.forEach(d => d.dispose());
+			disposables.forEach(d => {
+				if (d && typeof d.dispose == 'function') { d.dispose() }				
+			});
 		}
 	}
 
@@ -316,7 +334,9 @@ class MultiStepInput {
 				this.current.show();
 			});
 		} finally {
-			disposables.forEach(d => d.dispose());
+			disposables.forEach(d => {
+				if (d  && typeof d.dispose == 'function') { d.dispose() }				
+			});
 		}
 	}
 }

@@ -14,8 +14,6 @@ let extensionState : ExtensionState = {
 
 export function activate(context: vscode.ExtensionContext) {
 
-	console.log('Activating kubeseal extension');
-
 	function initializeConfiguration() {
 		const kubesealConfiguration = vscode.workspace.getConfiguration('kubeseal')
 		const configuredKubeSealPath = kubesealConfiguration.get<string>('executablePath')
@@ -120,6 +118,5 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-	console.log('Deactivating kubeseal extension');
 }
 

@@ -35,8 +35,6 @@ export async function sealSecretRaw(
             throw `Internal error. Unknown scope ${sealSecretParams.scope}`;
     }
 
-    console.log("command", command);
-
     // Execute command line
     try {
         const { stdout } = await cp.exec(command);
@@ -46,7 +44,6 @@ export async function sealSecretRaw(
                 result += chunk.toString();
             };		    
         }
-        console.log("encrypted result", result);
         return result;
     }
     catch (error) {
@@ -84,8 +81,6 @@ export async function sealSecretFile(
         default:
             throw `Internal error. Unknown scope ${sealSecretParams.scope}`;
     }
-
-    console.log("command", command)
     
     // Execute command line
     try {
@@ -99,7 +94,7 @@ export async function sealSecretFile(
                 result += chunk.toString();
             };		    
         }
-        console.log("encrypted result", result);
+
         return result;
     }
     catch (error) {

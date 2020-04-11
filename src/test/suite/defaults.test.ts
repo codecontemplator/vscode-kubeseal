@@ -91,7 +91,7 @@ status: {}
     });
 
     test("Should extract defaults from path for params.libsonnet documents", () => {
-
+        // Arrange
         const context = stubInterface<ExtensionContext>()
         const document = <TextDocument>{
             fileName: 'X:\\Develop\\kube-applications-state\\apps\\solutions\\reportgenerator\\uat\\params.libsonnet',
@@ -106,4 +106,22 @@ status: {}
         assert.equal(result.namespace, 'solutions-reportgenerator')
         assert.equal(result.scope, Scope.strict)
     });
+
+    test("Should fail gracefully for params.libsonnet documents with non standard path", () => {
+        // Arrange
+        const context = stubInterface<ExtensionContext>()
+        const document = <TextDocument>{
+            fileName: 'X:\\Source\\params.libsonnet',
+            isUntitled: false
+        };
+        
+        // Act
+        const result = collectSealSecretDefaults(context, document)
+
+        // Assert
+        assert.equal(result.name, undefined)
+        assert.equal(result.namespace, undefined)
+        assert.equal(result.scope, Scope.strict)
+    });
+
 });

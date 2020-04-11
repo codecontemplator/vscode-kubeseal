@@ -16,19 +16,25 @@ export function collectSealSecretDefaults(context : ExtensionContext, document :
     // Special case for for libsonnet files. TODO: should be generalized
     if (!document.isUntitled && path.basename(document.fileName) === 'params.libsonnet')
     {
+        // Default scope is assumed to be strict in this case
+        result.scope = Scope.strict
+
         // Try to extract parameters from path
         const pathParts = path.dirname(document.fileName).split(path.sep)
         const pathPartsRev = pathParts.slice().reverse();
 
-        const envName = pathPartsRev[0]
-        const appName = pathPartsRev[1]
-        const teamName = pathPartsRev[2]
-        const root = pathParts.slice().splice(0, pathParts.length - 4).join(path.sep)
-        
-        result.name = appName
-        result.namespace = `${teamName}-${appName}`
-        result.certificatePath = path.join(root, 'sealed-secrets', envName === 'prod' ? 'prod.pem' : 'nonprod.pem')
-        result.scope = Scope.strict
+        // Validate
+        if (pathPartsRev.length > 4 && pathPartsRev[3] === 'apps')
+        {
+            const envName = pathPartsRev[0]
+            const appName = pathPartsRev[1]
+            const teamName = pathPartsRev[2]
+            const root = pathParts.slice().splice(0, pathParts.length - 4).join(path.sep)
+            
+            result.name = appName
+            result.namespace = `${teamName}-${appName}`
+            result.certificatePath = path.join(root, 'sealed-secrets', envName === 'prod' ? 'prod.pem' : 'nonprod.pem')
+        }
     }
     else
     {

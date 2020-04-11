@@ -28,7 +28,6 @@ suite('Defaults', () => {
     });
 
     test("Should extract name and namespace from secret yaml if available", () => {
-
         // Arrange
         const context = stubInterface<ExtensionContext>()
         const document = stubInterface<TextDocument>()
@@ -105,6 +104,30 @@ status: {}
         assert.equal(result.name, 'reportgenerator')
         assert.equal(result.namespace, 'solutions-reportgenerator')
         assert.equal(result.scope, Scope.strict)
+    });
+
+    test("Should fail gracefully for invalid yaml", () => {
+        // Arrange
+        const context = stubInterface<ExtensionContext>()
+        const document = stubInterface<TextDocument>()
+        document.getText.callsFake(() => `
+apiVersion: v1
+kind: Secret
+metadata:
+    name: secretName
+    namespace: secretNamespace
+type: Opaque
+data:
+    username
+    password: MWYyZDFlMmU2N2Rm        
+`)
+
+        // Act
+        const result = collectSealSecretDefaults(context, document)
+
+        // Assert
+        assert.equal(result.name, undefined)
+        assert.equal(result.namespace, undefined)
     });
 
     test("Should fail gracefully for params.libsonnet documents with non standard path", () => {

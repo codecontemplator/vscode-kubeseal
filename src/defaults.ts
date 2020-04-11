@@ -39,17 +39,22 @@ export function collectSealSecretDefaults(context : ExtensionContext, document :
     else
     {
         // Try to extract name, namespace and scope from document
-        const documentText = document.getText()
-        const documentDom = yaml.safeLoad(documentText)
-        result.name = documentDom?.metadata?.name
-        result.namespace = documentDom?.metadata?.namespace
-        const annotations = documentDom?.metadata?.annotations;
-        if (annotations && annotations['sealedsecrets.bitnami.com/cluster-wide'] === 'true') 
-            result.scope = Scope.clusterWide
-        else if (annotations && annotations['sealedsecrets.bitnami.com/namespace-wide'] === 'true')
-            result.scope = Scope.namespaceWide
-        else if (documentDom?.metadata)
-            result.scope = Scope.strict
+        try {
+            const documentText = document.getText()
+            const documentDom = yaml.safeLoad(documentText)
+            result.name = documentDom?.metadata?.name
+            result.namespace = documentDom?.metadata?.namespace
+            const annotations = documentDom?.metadata?.annotations;
+            if (annotations && annotations['sealedsecrets.bitnami.com/cluster-wide'] === 'true') 
+                result.scope = Scope.clusterWide
+            else if (annotations && annotations['sealedsecrets.bitnami.com/namespace-wide'] === 'true')
+                result.scope = Scope.namespaceWide
+            else if (documentDom?.metadata)
+                result.scope = Scope.strict
+            } 
+        catch(error) {
+            console.log(error)
+        }
     }
     
     // Return

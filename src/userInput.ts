@@ -50,8 +50,6 @@ export async function collectSealSecretUserInput(
 	async function pickScope(input: MultiStepInput, state: Partial<State>) {
 		state.scope = await input.showQuickPick({
 			title,
-			step: 1,
-			totalSteps: 2,
 			placeholder: 'Select scope',
 			items: scopes,
 			activeItem: state.scope,
@@ -74,8 +72,6 @@ export async function collectSealSecretUserInput(
 	async function inputName(input: MultiStepInput, state: Partial<State>) {
 		state.name = await input.showInputBox({
 			title,
-			step: 2,
-			totalSteps: 4,
 			value: state.name || '',
 			prompt: 'Specify name',
 			validate: validateName,
@@ -87,8 +83,6 @@ export async function collectSealSecretUserInput(
 	async function inputNamespace(input: MultiStepInput, state: Partial<State>) {
 		state.namespace = await input.showInputBox({
 			title,
-			step: state.scopeValue === Scope.strict ? 3 : 2,
-			totalSteps: state.scopeValue === Scope.strict ? 4 : 3,
 			value: state.namespace || '',
 			prompt: 'Specify namespace',
 			validate: validateNamespace,
@@ -101,8 +95,6 @@ export async function collectSealSecretUserInput(
 	async function inputCertificatePath(input: MultiStepInput, state: Partial<State>) {
 		let pick = await input.showInputBox({
 			title,
-			step: state.scopeValue === Scope.strict ? 3 : 3,
-			totalSteps: state.scopeValue === Scope.strict ? 4 : 4,
 			value: state.certificatePath || '',
 			prompt: 'Specify certificate path',
 			buttons: [createPickCertificateFromWorkspaceButton],
@@ -122,8 +114,6 @@ export async function collectSealSecretUserInput(
 		let items = files.map(x => ({ label: x.path.replace(/^\/([A-Za-z]{1,2}:)/, '$1') }))  // getting rid of initial slash since we get /c:/some-path 
 		let pick = await input.showQuickPick({
 			title,
-			step: 1,
-			totalSteps: 2,
 			placeholder: 'Select certificate',
 			items: items,
 			activeItem: state.scope,
@@ -186,8 +176,8 @@ type InputStep = (input: MultiStepInput) => Thenable<InputStep | void>;
 
 interface QuickPickParameters<T extends QuickPickItem> {
 	title: string;
-	step: number;
-	totalSteps: number;
+	step?: number;
+	totalSteps?: number;
 	items: T[];
 	activeItem?: T;
 	placeholder: string;
@@ -197,8 +187,8 @@ interface QuickPickParameters<T extends QuickPickItem> {
 
 interface InputBoxParameters {
 	title: string;
-	step: number;
-	totalSteps: number;
+	step?: number;
+	totalSteps?: number;
 	value: string;
 	prompt: string;
 	validate: (value: string) => Promise<string | undefined>;

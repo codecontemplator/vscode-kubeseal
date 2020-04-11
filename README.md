@@ -64,7 +64,7 @@ echo -n selectedSecretText | kubeseal --raw --from-file=/dev/stdin --scope clust
 
 ## Requirements
 
-The plugin ships a prebuilt version of kubeseal for windows. On other platform kubeseal must be installed as a prerequisite. Installation instructions can be found [here](https://github.com/bitnami-labs/sealed-secrets#installation).
+The plugin ships with a prebuilt version of kubeseal for windows. On other platform kubeseal must be installed as a prerequisite. Installation instructions can be found [here](https://github.com/bitnami-labs/sealed-secrets#installation).
 
 ## Extension Settings
 
@@ -83,3 +83,7 @@ Initial release
 ### 0.0.2
 
 Added tests. Improved default parameters. Miscellaneous fixes.
+
+### 0.0.3
+
+Improved select certificate dialog

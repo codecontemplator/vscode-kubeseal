@@ -1,5 +1,5 @@
 // Ref: https://github.com/microsoft/vscode-extension-samples/blob/master/quickinput-sample/src/multiStepInput.ts
-import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri, QuickPick } from 'vscode';
+import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri, QuickPick, workspace } from 'vscode';
 import { Scope, SealSecretParameters } from './types';
 import * as fs from 'fs';
 
@@ -7,6 +7,15 @@ export async function collectSealSecretUserInput(
 		context: ExtensionContext, 
 		defaults: SealSecretParameters | null
 	) : Promise<SealSecretParameters> {
+
+	class SimpleButton implements QuickInputButton {
+		constructor(public iconPath: { light: Uri; dark: Uri; }, public tooltip: string) { }
+	}
+
+	const createPickCertificateFromWorkspaceButton = new SimpleButton({
+		dark: Uri.file(context.asAbsolutePath('resources/dark/add.svg')),
+		light: Uri.file(context.asAbsolutePath('resources/light/add.svg')),
+	}, 'Pick certificate from workspace');
 
 	const scopes: QuickPickItem[] = [Scope.strict, Scope.namespaceWide, Scope.clusterWide].map(scope => ({ label: Scope[scope] }));
 	// Object.keys(Scope).map(label => ({ label }));
@@ -90,15 +99,38 @@ export async function collectSealSecretUserInput(
 	}
 
 	async function inputCertificatePath(input: MultiStepInput, state: Partial<State>) {
-		state.certificatePath = await input.showInputBox({
+		let pick = await input.showInputBox({
 			title,
 			step: state.scopeValue === Scope.strict ? 3 : 3,
 			totalSteps: state.scopeValue === Scope.strict ? 4 : 4,
 			value: state.certificatePath || '',
 			prompt: 'Specify certificate path',
+			buttons: [createPickCertificateFromWorkspaceButton],
 			validate: validateCertificatePath,
 			shouldResume: shouldResume
 		});
+
+		if (pick instanceof SimpleButton) {
+			return (input: MultiStepInput) => pickCertificatePathFromSolution(input, state);
+		} else {
+			state.certificatePath = pick
+		}
+	}
+
+	async function pickCertificatePathFromSolution(input: MultiStepInput, state: Partial<State>) {
+		let files = await workspace.findFiles('**/*.pem')
+		let items = files.map(x => ({ label: x.path.replace(/^\/([A-Za-z]{1,2}:)/, '$1') }))  // getting rid of initial slash since we get /c:/some-path 
+		let pick = await input.showQuickPick({
+			title,
+			step: 1,
+			totalSteps: 2,
+			placeholder: 'Select certificate',
+			items: items,
+			activeItem: state.scope,
+			shouldResume: shouldResume
+		});
+
+		state.certificatePath = pick.label
 	}
 
 	function shouldResume() {

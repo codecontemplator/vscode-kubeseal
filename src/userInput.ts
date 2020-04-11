@@ -1,5 +1,5 @@
 // Ref: https://github.com/microsoft/vscode-extension-samples/blob/master/quickinput-sample/src/multiStepInput.ts
-import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri, QuickPick, workspace } from 'vscode';
+import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri, QuickPick, workspace, ThemeIcon } from 'vscode';
 import { Scope, SealSecretParameters } from './types';
 import * as fs from 'fs';
 
@@ -9,13 +9,12 @@ export async function collectSealSecretUserInput(
 	) : Promise<SealSecretParameters> {
 
 	class SimpleButton implements QuickInputButton {
-		constructor(public iconPath: { light: Uri; dark: Uri; }, public tooltip: string) { }
+		constructor(public iconPath: ThemeIcon, public tooltip: string) { }
 	}
 
-	const createPickCertificateFromWorkspaceButton = new SimpleButton({
-		dark: Uri.file(context.asAbsolutePath('resources/dark/add.svg')),
-		light: Uri.file(context.asAbsolutePath('resources/light/add.svg')),
-	}, 'Pick certificate from workspace');
+	// Theme icons: https://microsoft.github.io/vscode-codicons/dist/codicon.html
+	const pickCertificateFromWorkspaceButton = new SimpleButton(
+		new ThemeIcon('go-to-file'), 'Pick certificate from workspace');
 
 	const scopes: QuickPickItem[] = [Scope.strict, Scope.namespaceWide, Scope.clusterWide].map(scope => ({ label: Scope[scope] }));
 	// Object.keys(Scope).map(label => ({ label }));
@@ -97,7 +96,7 @@ export async function collectSealSecretUserInput(
 			title,
 			value: state.certificatePath || '',
 			prompt: 'Specify certificate path',
-			buttons: [createPickCertificateFromWorkspaceButton],
+			buttons: [pickCertificateFromWorkspaceButton],
 			validate: validateCertificatePath,
 			shouldResume: shouldResume
 		});

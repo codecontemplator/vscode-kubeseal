@@ -53,7 +53,6 @@ export function collectSealSecretDefaults(context : ExtensionContext, document :
                 result.scope = Scope.strict
             } 
         catch(error) {
-            console.log(error)
         }
     }
     

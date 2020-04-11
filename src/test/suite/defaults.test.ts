@@ -51,17 +51,21 @@ data:
         assert.equal(result.namespace, 'secretNamespace')
     });
 
-    test("Should extract name and namespace and scope from sealed secret yaml if available", () => {
+    [ { annotation: null, expectedScope: Scope.strict}
+    , { annotation: 'sealedsecrets.bitnami.com/namespace-wide: "true"', expectedScope: Scope.namespaceWide}
+    , { annotation: 'sealedsecrets.bitnami.com/cluster-wide: "true"', expectedScope: Scope.clusterWide}
+    ].forEach(({ annotation, expectedScope }) =>
+        test(`Should extract name and namespace and scope '${Scope[expectedScope]}' from sealed secret yaml if available`, () => {
 
-        // Arrange
-        const context = stubInterface<ExtensionContext>()
-        const document = stubInterface<TextDocument>()
-        document.getText.callsFake(() => `
+            // Arrange
+            const context = stubInterface<ExtensionContext>()
+            const document = stubInterface<TextDocument>()
+            document.getText.callsFake(() => `
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
     annotations:
-        sealedsecrets.bitnami.com/cluster-wide: "true"
+        ${annotation}
     creationTimestamp: null
     name: secretName
     namespace: secretNamespace
@@ -79,15 +83,16 @@ spec:
     type: Opaque
 status: {}
 `)
-
-        // Act
-        const result = collectSealSecretDefaults(context, document)
-
-        // Assert
-        assert.equal(result.name, 'secretName')
-        assert.equal(result.namespace, 'secretNamespace')
-        assert.equal(result.scope, Scope.clusterWide)
-    });
+    
+            // Act
+            const result = collectSealSecretDefaults(context, document)
+    
+            // Assert
+            assert.equal(result.name, 'secretName')
+            assert.equal(result.namespace, 'secretNamespace')
+            assert.equal(result.scope, expectedScope)
+        })
+    );
 
     test("Should extract defaults from path for params.libsonnet documents", () => {
         // Arrange

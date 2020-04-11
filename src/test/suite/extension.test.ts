@@ -33,14 +33,11 @@ suite('Extension Test Suite', () => {
 	mocha.beforeEach(() => {
 		createQuickPickStub = sinon.stub(vscode.window, 'createQuickPick')
 		createInputBoxStub = sinon.stub(vscode.window, 'createInputBox')
-		fileExistsSyncStub = sinon.stub(fs, 'existsSync')
 	});
 	  	
 	mocha.afterEach(() => {
 		createQuickPickStub.restore();
 		createInputBoxStub.restore();
-		fileExistsSyncStub.restore();
-		//sinon.restore();
 	});
 	  	
     test("Extension should be present", () => {
@@ -52,11 +49,7 @@ suite('Extension Test Suite', () => {
 		await extension?.activate()
 	});
 		
-	test('Convert secret file to sealed secret file', async () => {
-
-		// Setup mocks		
-		fileExistsSyncStub.callsFake(() => true);
-		
+	function setupQuickPickStub() {
         createQuickPickStub.callsFake(() => {
 			var quickPickStub = stubInterface<vscode.QuickPick<vscode.QuickPickItem>>();
 			quickPickStub.onDidChangeSelection.callsFake(handler => {
@@ -73,7 +66,9 @@ suite('Extension Test Suite', () => {
 			});
 			return quickPickStub;
 		});
+	}
 
+	function setupInputBoxStub() {
 		createInputBoxStub.callsFake(() => {
 			var inputBoxStub = stubInterface<vscode.InputBox>();
 			inputBoxStub.onDidAccept.callsFake(asyncHandler => {
@@ -96,6 +91,12 @@ suite('Extension Test Suite', () => {
 			});
 			return inputBoxStub;
 		});
+	}
+
+	test('Convert secret file to sealed secret file', async () => {
+
+		setupQuickPickStub()
+		setupInputBoxStub()
 				
 		const temporaryFile = tmp.fileSync();
 		try

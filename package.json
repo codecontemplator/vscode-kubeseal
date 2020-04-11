@@ -2,7 +2,7 @@
 	"name": "kubeseal",
 	"displayName": "Kubeseal",
 	"description": "Kubeseal for vscode",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"publisher": "codecontemplator",
 	"license": "Apache License",
 	"repository": {

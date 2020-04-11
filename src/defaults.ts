@@ -24,7 +24,7 @@ export function collectSealSecretDefaults(context : ExtensionContext, document :
         const pathPartsRev = pathParts.slice().reverse();
 
         // Validate
-        if (pathPartsRev.length > 4 && pathPartsRev[3] === 'apps')
+        if (pathPartsRev.length >= 4 && pathPartsRev[3] === 'apps')
         {
             const envName = pathPartsRev[0]
             const appName = pathPartsRev[1]

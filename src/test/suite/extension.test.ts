@@ -8,6 +8,10 @@ import * as path from 'path'
 import * as yaml from 'js-yaml'
 import { Scope } from '../../types'
 
+function delay(timeInMilliSeconds : number) {
+	return new Promise(res => setTimeout(res, timeInMilliSeconds))
+}
+
 suite('Extension Test Suite', () => {
 
 	let createQuickPickStub : sinon.SinonStub; 
@@ -131,5 +135,25 @@ data:
 		{
 			temporaryFile.removeCallback();
 		}
+	});
+
+	test('Encrypt selected text', async () => {
+
+		// Arrange
+		setupQuickPickStub()
+		setupInputBoxStub()
+
+		await vscode.commands.executeCommand('workbench.action.closeAllEditors')
+		const textDocument = await vscode.workspace.openTextDocument({ content: 'aSecretValue' })
+		await vscode.window.showTextDocument(textDocument)
+		await vscode.commands.executeCommand('editor.action.selectAll')
+		
+		// Act
+		await vscode.commands.executeCommand('extension.sealKubeSecretSelectedText')
+		await delay(10) // Need to wait a little bit for the text buffer to get updated
+
+		// Assert
+		const encryptedResult = await textDocument.getText()
+		assert.ok(encryptedResult.startsWith('AQ'))
 	});
 });

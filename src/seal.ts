@@ -3,7 +3,6 @@ import * as tmp from 'tmp';
 import * as fs from 'fs'
 import * as cp from 'child_process';
 
-// https://zaiste.net/nodejs-child-process-spawn-exec-fork-async-await/
 export async function sealSecretRaw(
         kubesealPath: string, 
         plainTextSecret: string,   
@@ -36,30 +35,22 @@ export async function sealSecretRaw(
     }
 
     // Execute command line
-    try {
-        const { stdout } = await cp.exec(command);
-        let result : string = "";
-        if (stdout) {
-            for await (const chunk of stdout) {
-                result += chunk.toString();
-            };		    
-        }
-        return result;
-    }
-    catch (error) {
-        // TODO: this error handling does not work. no exception is thrown when things fails
-        throw `Execution of kubeseal command failed. ${error}`;
-    }
-    finally {
-        temporaryFile.removeCallback();
-    }
+    return new Promise<string>((resolve,reject) => {
+        cp.exec(command, {}, (error, stdout) => {
+            if (error) {
+                reject(error.message)
+            } else {
+                resolve(stdout)
+            }
+        });
+    }).finally(temporaryFile.removeCallback);
 }
 
 export async function sealSecretFile(
     kubesealPath: string, 
     secretFilePath: string,
     sealSecretParams : SealSecretParameters
-    )
+    ) : Promise<string>
 {
     // Get file data
     const secretFileData = fs.readFileSync(secretFilePath);
@@ -83,22 +74,15 @@ export async function sealSecretFile(
     }
     
     // Execute command line
-    try {
-        const cmdProcess = cp.exec(command);
+    return new Promise<string>((resolve,reject) => {
+        const cmdProcess = cp.exec(command, {}, (error, stdout) => {
+            if (error) {
+                reject(error.message)
+            } else {
+                resolve(stdout)
+            }
+        });
+
         cmdProcess.stdin?.end(secretFileData);
-        const { stdout } = await cmdProcess;
-
-        let result : string = "";
-        if (stdout) {
-            for await (const chunk of stdout) {
-                result += chunk.toString();
-            };		    
-        }
-
-        return result;
-    }
-    catch (error) {
-        // TODO: this error handling does not work. no exception is thrown when things fails
-        throw `Execution of kubeseal command failed. ${error}`;
-    }    
+    });
 }

@@ -2,6 +2,7 @@
 import { QuickPickItem, window, Disposable, CancellationToken, QuickInputButton, QuickInput, ExtensionContext, QuickInputButtons, Uri, QuickPick, workspace, ThemeIcon } from 'vscode';
 import { Scope, SealSecretParameters } from './types';
 import * as fs from 'fs';
+import * as path from 'path';
 
 export async function collectSealSecretUserInput(
 		context: ExtensionContext, 
@@ -14,7 +15,7 @@ export async function collectSealSecretUserInput(
 
 	// Theme icons: https://microsoft.github.io/vscode-codicons/dist/codicon.html
 	const pickCertificateFromWorkspaceButton = new SimpleButton(
-		new ThemeIcon('go-to-file'), 'Pick certificate from workspace');
+		new ThemeIcon('root-folder-opened'), 'Pick certificate from workspace');
 
 	const browseForCertificateButton = new SimpleButton(
 		new ThemeIcon('folder-opened'), 'Browse for certificate');	
@@ -95,6 +96,7 @@ export async function collectSealSecretUserInput(
 	}
 
 	async function inputCertificatePath(input: MultiStepInput, state: Partial<State>) : Promise<InputStep | void> {
+
 		let pick = await input.showInputBox({
 			title,
 			value: state.certificatePath || '',
@@ -106,7 +108,22 @@ export async function collectSealSecretUserInput(
 
 		if (pick instanceof SimpleButton) {
 			if (pick == pickCertificateFromWorkspaceButton) {
-				return (input: MultiStepInput) => pickCertificatePathFromSolution(input, state);
+				let files = await workspace.findFiles('**/*.pem')
+				if (files.length > 0) {
+					let items = files.map(x => ({ label: x.path.replace(/^\/([A-Za-z]{1,2}:)/, '$1') }))  // getting rid of initial slash since we get /c:/some-path 
+					let pick = await input.showQuickPick({
+						title,
+						placeholder: 'Select certificate',
+						items: items,
+						activeItem: state.scope,
+						shouldResume: shouldResume
+					});
+			
+					state.certificatePath = pick.label		
+				} else {
+					window.showInformationMessage("No certificates found in the current workspace")
+					return (input: MultiStepInput) => inputCertificatePath(input, state);
+				}
 			} else if (pick == browseForCertificateButton) {
 				const browseResult = await window.showOpenDialog({ 
 					canSelectFiles: true, 
@@ -126,20 +143,6 @@ export async function collectSealSecretUserInput(
 		}
 	}
 
-	async function pickCertificatePathFromSolution(input: MultiStepInput, state: Partial<State>) {
-		let files = await workspace.findFiles('**/*.pem')
-		let items = files.map(x => ({ label: x.path.replace(/^\/([A-Za-z]{1,2}:)/, '$1') }))  // getting rid of initial slash since we get /c:/some-path 
-		let pick = await input.showQuickPick({
-			title,
-			placeholder: 'Select certificate',
-			items: items,
-			activeItem: state.scope,
-			shouldResume: shouldResume
-		});
-
-		state.certificatePath = pick.label
-	}
-
 	function shouldResume() {
 		// Could show a notification with the option to resume.
 		return new Promise<boolean>((resolve, reject) => {
@@ -148,26 +151,29 @@ export async function collectSealSecretUserInput(
 	}
 
 	async function validateName(name: string) {
-		// ...validate...
-		//await new Promise(resolve => setTimeout(resolve, 1000));
-		//return name === 'vscode' ? 'Name not unique' : undefined;
-		return Promise.resolve(name ? undefined : 'Please specify name');
+		if (!name) {
+			return 'Please specify name'
+		}
 	}
 
 	async function validateNamespace(namespace: string) {
-		// ...validate...
-		//await new Promise(resolve => setTimeout(resolve, 1000));
-		//return name === 'vscode' ? 'Name not unique' : undefined;
-		return Promise.resolve(namespace ? undefined : 'Please specify namespace');
+		if (!namespace) {
+			return 'Please specify namespace'
+		}
 	}
 
 	async function validateCertificatePath(certificatePath: string) {
-		// do async
-		return Promise.resolve(fs.existsSync(certificatePath) ? undefined : 'File not found'); 
+		if (path.extname(certificatePath) !== '.pem') {
+			return 'Invalid certificate filename'
+		}
+
+		const fileExists = await new Promise(resolve => fs.exists(certificatePath, resolve))
+		if (!fileExists) {
+			return 'File not found'
+		}
 	}
 
 	const state = await collectInputs();
-	//window.showInformationMessage(`Sealing secret ${state.name} ${state.namespace} ${state.scope.label}`);
 	return {
 		scope: state.scopeValue,
 		name: state.name,

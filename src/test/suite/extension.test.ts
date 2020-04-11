@@ -1,41 +1,24 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import sinon, { stubInterface  } from "ts-sinon";
-//import Sinon = require('sinon');
-import * as mocha from "mocha";
+import { beforeEach, afterEach } from "mocha";
 import * as fs from 'fs';
 import * as tmp from 'tmp';
 import * as path from 'path'
 import * as yaml from 'js-yaml'
 import { Scope } from '../../types'
 
-// https://code.visualstudio.com/api/working-with-extensions/testing-extension
-// https://github.com/microsoft/vscode-java-dependency/tree/master/test
-// https://github.com/OmniSharp/omnisharp-vscode/blob/master/test/
-// https://github.com/microsoft/vscode-azure-blockchain-ethereum/blob/master/test/commands/ProjectCommand.test.ts
-// https://github.com/microsoft/vscode-extension-samples/blob/master/quickinput-sample/src/quickOpen.ts
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
-
-// function delay(ms: number) {
-// 	return new Promise( resolve => setTimeout(resolve, ms) );
-// }
-
-
 suite('Extension Test Suite', () => {
-
-	//vscode.window.showInformationMessage('Start all tests.');
 
 	let createQuickPickStub : sinon.SinonStub; 
 	let createInputBoxStub : sinon.SinonStub;  
-	let fileExistsSyncStub : sinon.SinonStub;  
 	
-	mocha.beforeEach(() => {
+	beforeEach(() => {
 		createQuickPickStub = sinon.stub(vscode.window, 'createQuickPick')
 		createInputBoxStub = sinon.stub(vscode.window, 'createInputBox')
 	});
 	  	
-	mocha.afterEach(() => {
+	afterEach(() => {
 		createQuickPickStub.restore();
 		createInputBoxStub.restore();
 	});

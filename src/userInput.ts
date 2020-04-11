@@ -16,6 +16,9 @@ export async function collectSealSecretUserInput(
 	const pickCertificateFromWorkspaceButton = new SimpleButton(
 		new ThemeIcon('go-to-file'), 'Pick certificate from workspace');
 
+	const browseForCertificateButton = new SimpleButton(
+		new ThemeIcon('folder-opened'), 'Browse for certificate');	
+
 	const scopes: QuickPickItem[] = [Scope.strict, Scope.namespaceWide, Scope.clusterWide].map(scope => ({ label: Scope[scope] }));
 	// Object.keys(Scope).map(label => ({ label }));
 
@@ -91,18 +94,33 @@ export async function collectSealSecretUserInput(
 		return (input: MultiStepInput) => inputCertificatePath(input, state);
 	}
 
-	async function inputCertificatePath(input: MultiStepInput, state: Partial<State>) {
+	async function inputCertificatePath(input: MultiStepInput, state: Partial<State>) : Promise<InputStep | void> {
 		let pick = await input.showInputBox({
 			title,
 			value: state.certificatePath || '',
 			prompt: 'Specify certificate path',
-			buttons: [pickCertificateFromWorkspaceButton],
+			buttons: [pickCertificateFromWorkspaceButton, browseForCertificateButton],
 			validate: validateCertificatePath,
 			shouldResume: shouldResume
 		});
 
 		if (pick instanceof SimpleButton) {
-			return (input: MultiStepInput) => pickCertificatePathFromSolution(input, state);
+			if (pick == pickCertificateFromWorkspaceButton) {
+				return (input: MultiStepInput) => pickCertificatePathFromSolution(input, state);
+			} else if (pick == browseForCertificateButton) {
+				const browseResult = await window.showOpenDialog({ 
+					canSelectFiles: true, 
+					canSelectFolders: false, 
+					canSelectMany: false,
+					filters: { 'Certificates': [ 'pem' ]},
+				})
+
+				if (browseResult && browseResult.length > 0) {
+					state.certificatePath = browseResult[0].fsPath
+				}
+				
+				return (input: MultiStepInput) => inputCertificatePath(input, state);
+			}
 		} else {
 			state.certificatePath = pick
 		}

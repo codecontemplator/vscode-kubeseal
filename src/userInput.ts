@@ -35,13 +35,13 @@ export async function collectSealSecretUserInput(
 	}
 
 	async function collectInputs() {
-		const state = { } as Partial<State>
-		state.name = defaults?.name
-		state.namespace = defaults?.namespace
-		state.certificatePath = defaults?.certificatePath
+		const state = { } as Partial<State>;
+		state.name = defaults?.name;
+		state.namespace = defaults?.namespace;
+		state.certificatePath = defaults?.certificatePath;
 		if (defaults?.scope) {
-			state.scopeValue = defaults?.scope
-			state.scope = scopes[defaults?.scope - 1]
+			state.scopeValue = defaults?.scope;
+			state.scope = scopes[defaults?.scope - 1];
 		}
 
 		await MultiStepInput.run(input => pickScope(input, state));
@@ -108,9 +108,9 @@ export async function collectSealSecretUserInput(
 
 		if (pick instanceof SimpleButton) {
 			if (pick == pickCertificateFromWorkspaceButton) {
-				let files = await workspace.findFiles('**/*.pem')
+				let files = await workspace.findFiles('**/*.pem');
 				if (files.length > 0) {
-					let items = files.map(x => ({ label: x.path.replace(/^\/([A-Za-z]{1,2}:)/, '$1') }))  // getting rid of initial slash since we get /c:/some-path 
+					let items = files.map(x => ({ label: x.path.replace(/^\/([A-Za-z]{1,2}:)/, '$1') }));  // getting rid of initial slash since we get /c:/some-path 
 					let pick = await input.showQuickPick({
 						title,
 						placeholder: 'Select certificate',
@@ -119,9 +119,9 @@ export async function collectSealSecretUserInput(
 						shouldResume: shouldResume
 					});
 			
-					state.certificatePath = pick.label		
+					state.certificatePath = pick.label;		
 				} else {
-					window.showInformationMessage("No certificates found in the current workspace")
+					window.showInformationMessage("No certificates found in the current workspace");
 					return (input: MultiStepInput) => inputCertificatePath(input, state);
 				}
 			} else if (pick == browseForCertificateButton) {
@@ -130,16 +130,16 @@ export async function collectSealSecretUserInput(
 					canSelectFolders: false, 
 					canSelectMany: false,
 					filters: { 'Certificates': [ 'pem' ]},
-				})
+				});
 
 				if (browseResult && browseResult.length > 0) {
-					state.certificatePath = browseResult[0].fsPath
+					state.certificatePath = browseResult[0].fsPath;
 				}
 				
 				return (input: MultiStepInput) => inputCertificatePath(input, state);
 			}
 		} else {
-			state.certificatePath = pick
+			state.certificatePath = pick;
 		}
 	}
 
@@ -152,24 +152,24 @@ export async function collectSealSecretUserInput(
 
 	async function validateName(name: string) {
 		if (!name) {
-			return 'Please specify name'
+			return 'Please specify name';
 		}
 	}
 
 	async function validateNamespace(namespace: string) {
 		if (!namespace) {
-			return 'Please specify namespace'
+			return 'Please specify namespace';
 		}
 	}
 
 	async function validateCertificatePath(certificatePath: string) {
 		if (path.extname(certificatePath) !== '.pem') {
-			return 'Invalid certificate filename'
+			return 'Invalid certificate filename';
 		}
 
-		const fileExists = await new Promise(resolve => fs.exists(certificatePath, resolve))
+		const fileExists = await new Promise(resolve => fs.exists(certificatePath, resolve));
 		if (!fileExists) {
-			return 'File not found'
+			return 'File not found';
 		}
 	}
 
@@ -179,7 +179,7 @@ export async function collectSealSecretUserInput(
 		name: state.name,
 		namespace: state.namespace,
 		certificatePath: state.certificatePath
-	}
+	};
 }
 
 
@@ -298,7 +298,7 @@ class MultiStepInput {
 			});
 		} finally {
 			disposables.forEach(d => {
-				if (d && typeof d.dispose == 'function') { d.dispose() }				
+				if (d && typeof d.dispose === 'function') { d.dispose(); }				
 			});
 		}
 	}
@@ -359,7 +359,7 @@ class MultiStepInput {
 			});
 		} finally {
 			disposables.forEach(d => {
-				if (d  && typeof d.dispose == 'function') { d.dispose() }				
+				if (d  && typeof d.dispose === 'function') { d.dispose(); }				
 			});
 		}
 	}

@@ -1,15 +1,15 @@
 import * as assert from 'assert';
 import sinon, { stubInterface  } from "ts-sinon";
-import { collectSealSecretDefaults } from '../../defaults'
+import { collectSealSecretDefaults } from '../../defaults';
 import { ExtensionContext, TextDocument } from 'vscode';
-import { SealSecretParameters, Scope } from '../../types'
+import { SealSecretParameters, Scope } from '../../types';
 
 suite('Defaults', () => {
 
     test("Should reuse last used values if available", () => {
         // Arrange
-        const context = stubInterface<ExtensionContext>()
-        const document = stubInterface<TextDocument>()
+        const context = stubInterface<ExtensionContext>();
+        const document = stubInterface<TextDocument>();
         const lastUsed : SealSecretParameters = {
             name: "some-name",
             namespace: "some-namespace",
@@ -18,19 +18,19 @@ suite('Defaults', () => {
         };
 
         // Act
-        const result = collectSealSecretDefaults(context, document, lastUsed)
+        const result = collectSealSecretDefaults(context, document, lastUsed);
 
         // Assert
-        assert.equal(result.name, lastUsed.name)
-        assert.equal(result.namespace, lastUsed.namespace)
-        assert.equal(result.certificatePath, lastUsed.certificatePath)
-        assert.equal(result.scope, lastUsed.scope)
+        assert.equal(result.name, lastUsed.name);
+        assert.equal(result.namespace, lastUsed.namespace);
+        assert.equal(result.certificatePath, lastUsed.certificatePath);
+        assert.equal(result.scope, lastUsed.scope);
     });
 
     test("Should extract name and namespace from secret yaml if available", () => {
         // Arrange
-        const context = stubInterface<ExtensionContext>()
-        const document = stubInterface<TextDocument>()
+        const context = stubInterface<ExtensionContext>();
+        const document = stubInterface<TextDocument>();
         document.getText.callsFake(() => `
 apiVersion: v1
 kind: Secret
@@ -41,14 +41,14 @@ type: Opaque
 data:
     username: YWRtaW4=
     password: MWYyZDFlMmU2N2Rm        
-`)
+`);
 
         // Act
-        const result = collectSealSecretDefaults(context, document)
+        const result = collectSealSecretDefaults(context, document);
 
         // Assert
-        assert.equal(result.name, 'secretName')
-        assert.equal(result.namespace, 'secretNamespace')
+        assert.equal(result.name, 'secretName');
+        assert.equal(result.namespace, 'secretNamespace');
     });
 
     [ { annotation: null, expectedScope: Scope.strict}
@@ -58,8 +58,8 @@ data:
         test(`Should extract name and namespace and scope '${Scope[expectedScope]}' from sealed secret yaml if available`, () => {
 
             // Arrange
-            const context = stubInterface<ExtensionContext>()
-            const document = stubInterface<TextDocument>()
+            const context = stubInterface<ExtensionContext>();
+            const document = stubInterface<TextDocument>();
             document.getText.callsFake(() => `
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
@@ -82,39 +82,39 @@ spec:
         namespace: secretNamespace
     type: Opaque
 status: {}
-`)
+`);
     
             // Act
-            const result = collectSealSecretDefaults(context, document)
+            const result = collectSealSecretDefaults(context, document);
     
             // Assert
-            assert.equal(result.name, 'secretName')
-            assert.equal(result.namespace, 'secretNamespace')
-            assert.equal(result.scope, expectedScope)
+            assert.equal(result.name, 'secretName');
+            assert.equal(result.namespace, 'secretNamespace');
+            assert.equal(result.scope, expectedScope);
         })
     );
 
     test("Should extract defaults from path for params.libsonnet documents", () => {
         // Arrange
-        const context = stubInterface<ExtensionContext>()
+        const context = stubInterface<ExtensionContext>();
         const document = <TextDocument>{
             fileName: 'X:\\Develop\\kube-applications-state\\apps\\solutions\\reportgenerator\\uat\\params.libsonnet',
             isUntitled: false
         };
         
         // Act
-        const result = collectSealSecretDefaults(context, document)
+        const result = collectSealSecretDefaults(context, document);
 
         // Assert
-        assert.equal(result.name, 'reportgenerator')
-        assert.equal(result.namespace, 'solutions-reportgenerator')
-        assert.equal(result.scope, Scope.strict)
+        assert.equal(result.name, 'reportgenerator');
+        assert.equal(result.namespace, 'solutions-reportgenerator');
+        assert.equal(result.scope, Scope.strict);
     });
 
     test("Should fail gracefully for invalid yaml", () => {
         // Arrange
-        const context = stubInterface<ExtensionContext>()
-        const document = stubInterface<TextDocument>()
+        const context = stubInterface<ExtensionContext>();
+        const document = stubInterface<TextDocument>();
         document.getText.callsFake(() => `
 apiVersion: v1
 kind: Secret
@@ -125,31 +125,31 @@ type: Opaque
 data:
     username
     password: MWYyZDFlMmU2N2Rm        
-`)
+`);
 
         // Act
-        const result = collectSealSecretDefaults(context, document)
+        const result = collectSealSecretDefaults(context, document);
 
         // Assert
-        assert.equal(result.name, undefined)
-        assert.equal(result.namespace, undefined)
+        assert.equal(result.name, undefined);
+        assert.equal(result.namespace, undefined);
     });
 
     test("Should fail gracefully for params.libsonnet documents with non standard path", () => {
         // Arrange
-        const context = stubInterface<ExtensionContext>()
+        const context = stubInterface<ExtensionContext>();
         const document = <TextDocument>{
             fileName: 'X:\\Source\\params.libsonnet',
             isUntitled: false
         };
         
         // Act
-        const result = collectSealSecretDefaults(context, document)
+        const result = collectSealSecretDefaults(context, document);
 
         // Assert
-        assert.equal(result.name, undefined)
-        assert.equal(result.namespace, undefined)
-        assert.equal(result.scope, Scope.strict)
+        assert.equal(result.name, undefined);
+        assert.equal(result.namespace, undefined);
+        assert.equal(result.scope, Scope.strict);
     });
 
 });

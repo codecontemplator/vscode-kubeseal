@@ -1,6 +1,6 @@
 import { Scope, SealSecretParameters } from './types';
 import * as tmp from 'tmp';
-import * as fs from 'fs'
+import * as fs from 'fs';
 import * as cp from 'child_process';
 
 export async function sealSecretRaw(
@@ -38,9 +38,9 @@ export async function sealSecretRaw(
     return new Promise<string>((resolve,reject) => {
         cp.exec(command, {}, (error, stdout) => {
             if (error) {
-                reject(error.message)
+                reject(error.message);
             } else {
-                resolve(stdout)
+                resolve(stdout);
             }
         });
     }).finally(temporaryFile.removeCallback);
@@ -77,9 +77,9 @@ export async function sealSecretFile(
     return new Promise<string>((resolve,reject) => {
         const cmdProcess = cp.exec(command, {}, (error, stdout) => {
             if (error) {
-                reject(error.message)
+                reject(error.message);
             } else {
-                resolve(stdout)
+                resolve(stdout);
             }
         });
 

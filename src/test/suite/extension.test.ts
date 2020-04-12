@@ -4,12 +4,12 @@ import sinon, { stubInterface } from "ts-sinon";
 import { beforeEach, afterEach } from "mocha";
 import * as fs from 'fs';
 import * as tmp from 'tmp';
-import * as path from 'path'
-import * as yaml from 'js-yaml'
-import { Scope } from '../../types'
+import * as path from 'path';
+import * as yaml from 'js-yaml';
+import { Scope } from '../../types';
 
 function delay(timeInMilliSeconds: number) {
-	return new Promise(res => setTimeout(res, timeInMilliSeconds))
+	return new Promise(res => setTimeout(res, timeInMilliSeconds));
 }
 
 suite('Extension Test Suite', () => {
@@ -18,8 +18,8 @@ suite('Extension Test Suite', () => {
 	let createInputBoxStub: sinon.SinonStub;
 
 	beforeEach(() => {
-		createQuickPickStub = sinon.stub(vscode.window, 'createQuickPick')
-		createInputBoxStub = sinon.stub(vscode.window, 'createInputBox')
+		createQuickPickStub = sinon.stub(vscode.window, 'createQuickPick');
+		createInputBoxStub = sinon.stub(vscode.window, 'createInputBox');
 	});
 
 	afterEach(() => {
@@ -32,8 +32,8 @@ suite('Extension Test Suite', () => {
 	});
 
 	test("Extension should activate", async () => {
-		const extension = await vscode.extensions.getExtension('codecontemplator.kubeseal')
-		await extension?.activate()
+		const extension = await vscode.extensions.getExtension('codecontemplator.kubeseal');
+		await extension?.activate();
 	});
 
 	function setupQuickPickStub() {
@@ -44,7 +44,7 @@ suite('Extension Test Suite', () => {
 					case 'Select scope':
 						const selectedItem = quickPickStub.items.find(x => x.label == Scope[Scope.strict]);
 						const items = [];
-						if (selectedItem) items.push(selectedItem);
+						if (selectedItem) {items.push(selectedItem);}
 						return handler(items);
 					default:
 						throw 'Unhandled quick pick';
@@ -66,7 +66,7 @@ suite('Extension Test Suite', () => {
 						inputBoxStub.value = 'fake-namespace';
 						break;
 					case 'Specify certificate path':
-						inputBoxStub.value = path.resolve(__dirname, '../../../example/cert.pem')
+						inputBoxStub.value = path.resolve(__dirname, '../../../example/cert.pem');
 						break;
 					default:
 						throw 'Unhandled input box';
@@ -80,8 +80,8 @@ suite('Extension Test Suite', () => {
 
 	test('Convert secret file to sealed secret file', async () => {
 
-		setupQuickPickStub()
-		setupInputBoxStub()
+		setupQuickPickStub();
+		setupInputBoxStub();
 
 		const temporaryFile = tmp.fileSync();
 		try {
@@ -99,34 +99,34 @@ data:
 `);
 
 			// Activate extension
-			const extension = await vscode.extensions.getExtension('codecontemplator.kubeseal')
-			await extension?.activate()
+			const extension = await vscode.extensions.getExtension('codecontemplator.kubeseal');
+			await extension?.activate();
 
 			// Close all editors to get a good initial state
-			await vscode.commands.executeCommand('workbench.action.closeAllEditors')
-			assert.equal(vscode.workspace.textDocuments.length, 0)
+			await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+			assert.equal(vscode.workspace.textDocuments.length, 0);
 
 			// Open secret file
-			const textDocument = await vscode.workspace.openTextDocument(temporaryFile.name) //({ content: secretFileContent })
-			await vscode.window.showTextDocument(textDocument)
+			const textDocument = await vscode.workspace.openTextDocument(temporaryFile.name); //({ content: secretFileContent })
+			await vscode.window.showTextDocument(textDocument);
 			assert.notEqual(textDocument, null);
-			assert.equal(vscode.workspace.textDocuments.length, 1)
+			assert.equal(vscode.workspace.textDocuments.length, 1);
 
 			// Execute seal secret file command - This is our 'act' step
-			await vscode.commands.executeCommand('extension.sealKubeSecretFile')
+			await vscode.commands.executeCommand('extension.sealKubeSecretFile');
 
 			// Assert expected result
-			assert.equal(vscode.workspace.textDocuments.length, 2)
-			const resultDocument = vscode.workspace.textDocuments.find(x => x != textDocument)
-			const resultText = resultDocument?.getText()
-			if (!resultText) assert.fail()
-			const yamlResult = yaml.safeLoad(resultText)
-			assert.ok(yamlResult)
-			assert.equal(yamlResult.kind, 'SealedSecret')
-			assert.equal(yamlResult.metadata.name, 'fake-name')
-			assert.equal(yamlResult.metadata.namespace, 'fake-namespace')
-			assert.ok(yamlResult.spec.encryptedData.password)
-			assert.ok(yamlResult.spec.encryptedData.username)
+			assert.equal(vscode.workspace.textDocuments.length, 2);
+			const resultDocument = vscode.workspace.textDocuments.find(x => x != textDocument);
+			const resultText = resultDocument?.getText();
+			if (!resultText) {assert.fail();}
+			const yamlResult = yaml.safeLoad(resultText);
+			assert.ok(yamlResult);
+			assert.equal(yamlResult.kind, 'SealedSecret');
+			assert.equal(yamlResult.metadata.name, 'fake-name');
+			assert.equal(yamlResult.metadata.namespace, 'fake-namespace');
+			assert.ok(yamlResult.spec.encryptedData.password);
+			assert.ok(yamlResult.spec.encryptedData.username);
 		}
 		finally {
 			temporaryFile.removeCallback();
@@ -136,20 +136,20 @@ data:
 	test('Encrypt selected text', async () => {
 
 		// Arrange
-		setupQuickPickStub()
-		setupInputBoxStub()
+		setupQuickPickStub();
+		setupInputBoxStub();
 
-		await vscode.commands.executeCommand('workbench.action.closeAllEditors')
-		const textDocument = await vscode.workspace.openTextDocument({ content: 'aSecretValue' })
-		await vscode.window.showTextDocument(textDocument)
-		await vscode.commands.executeCommand('editor.action.selectAll')
+		await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+		const textDocument = await vscode.workspace.openTextDocument({ content: 'aSecretValue' });
+		await vscode.window.showTextDocument(textDocument);
+		await vscode.commands.executeCommand('editor.action.selectAll');
 
 		// Act
-		await vscode.commands.executeCommand('extension.sealKubeSecretSelectedText')
-		await delay(100) // Need to wait a little bit for the text buffer to get updated
+		await vscode.commands.executeCommand('extension.sealKubeSecretSelectedText');
+		await delay(100); // Need to wait a little bit for the text buffer to get updated
 
 		// Assert
-		const encryptedResult = await textDocument.getText()
-		assert.ok(encryptedResult.startsWith('AQ'))
+		const encryptedResult = await textDocument.getText();
+		assert.ok(encryptedResult.startsWith('AQ'));
 	});
 });

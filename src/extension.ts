@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
 	function initializeConfiguration() {
 		const kubesealConfiguration = vscode.workspace.getConfiguration('kubeseal');
 		const configuredKubeSealPath = kubesealConfiguration.get<string>('executablePath');
-		if (os.platform() == 'win32') {
+		if (os.platform() === 'win32') {
 			extensionState.kubeSealPath = configuredKubeSealPath || path.join(context.extensionPath, 'bin', 'kubeseal.exe');
 		} else {
 			if (configuredKubeSealPath) {

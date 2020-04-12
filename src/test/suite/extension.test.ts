@@ -42,12 +42,12 @@ suite('Extension Test Suite', () => {
 			quickPickStub.onDidChangeSelection.callsFake(handler => {
 				switch (quickPickStub.placeholder) {
 					case 'Select scope':
-						const selectedItem = quickPickStub.items.find(x => x.label == Scope[Scope.strict]);
+						const selectedItem = quickPickStub.items.find(x => x.label === Scope[Scope.strict]);
 						const items = [];
 						if (selectedItem) {items.push(selectedItem);}
 						return handler(items);
 					default:
-						throw 'Unhandled quick pick';
+						throw new Error('Unhandled quick pick');
 				}
 			});
 			return quickPickStub;
@@ -69,7 +69,7 @@ suite('Extension Test Suite', () => {
 						inputBoxStub.value = path.resolve(__dirname, '../../../example/cert.pem');
 						break;
 					default:
-						throw 'Unhandled input box';
+						throw new Error('Unhandled input box');
 				}
 
 				return asyncHandler();
@@ -117,7 +117,7 @@ data:
 
 			// Assert expected result
 			assert.equal(vscode.workspace.textDocuments.length, 2);
-			const resultDocument = vscode.workspace.textDocuments.find(x => x != textDocument);
+			const resultDocument = vscode.workspace.textDocuments.find(x => x !== textDocument);
 			const resultText = resultDocument?.getText();
 			if (!resultText) {assert.fail();}
 			const yamlResult = yaml.safeLoad(resultText);

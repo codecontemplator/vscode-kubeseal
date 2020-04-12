@@ -107,7 +107,7 @@ export async function collectSealSecretUserInput(
 		});
 
 		if (pick instanceof SimpleButton) {
-			if (pick == pickCertificateFromWorkspaceButton) {
+			if (pick === pickCertificateFromWorkspaceButton) {
 				let files = await workspace.findFiles('**/*.pem');
 				if (files.length > 0) {
 					let items = files.map(x => ({ label: x.path.replace(/^\/([A-Za-z]{1,2}:)/, '$1') }));  // getting rid of initial slash since we get /c:/some-path 
@@ -124,7 +124,7 @@ export async function collectSealSecretUserInput(
 					window.showInformationMessage("No certificates found in the current workspace");
 					return (input: MultiStepInput) => inputCertificatePath(input, state);
 				}
-			} else if (pick == browseForCertificateButton) {
+			} else if (pick === browseForCertificateButton) {
 				const browseResult = await window.showOpenDialog({ 
 					canSelectFiles: true, 
 					canSelectFolders: false, 

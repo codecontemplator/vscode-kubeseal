@@ -31,7 +31,7 @@ export async function sealSecretRaw(
             command = `${kubesealPath} --raw --from-file="${normalizedTemporaryFilename}" --namespace dummyNamespace --scope cluster-wide --cert "${normalizedCertificatePath}"`;
             break;
         default:
-            throw `Internal error. Unknown scope ${sealSecretParams.scope}`;
+            throw new Error(`Internal error. Unknown scope ${sealSecretParams.scope}`);
     }
 
     // Execute command line
@@ -70,7 +70,7 @@ export async function sealSecretFile(
             command = `${kubesealPath} --scope cluster-wide --cert "${normalizedCertificatePath}" --format yaml`;
             break;
         default:
-            throw `Internal error. Unknown scope ${sealSecretParams.scope}`;
+            throw new Error(`Internal error. Unknown scope ${sealSecretParams.scope}`);
     }
     
     // Execute command line

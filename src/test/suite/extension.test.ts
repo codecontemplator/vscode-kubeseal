@@ -146,7 +146,7 @@ data:
 
 		// Act
 		await vscode.commands.executeCommand('extension.sealKubeSecretSelectedText')
-		await delay(10) // Need to wait a little bit for the text buffer to get updated
+		await delay(100) // Need to wait a little bit for the text buffer to get updated
 
 		// Assert
 		const encryptedResult = await textDocument.getText()

@@ -2,7 +2,7 @@
 	"name": "kubeseal",
 	"displayName": "Kubeseal",
 	"description": "Kubeseal for vscode",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"publisher": "codecontemplator",
 	"license": "Apache License",
 	"repository": {
@@ -55,23 +55,23 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/glob": "^7.1.1",
+		"@types/glob": "^7.1.4",
 		"@types/mocha": "^7.0.1",
-		"@types/node": "^12.11.7",
-		"@types/vscode": "^1.43.0",
-		"@typescript-eslint/eslint-plugin": "^2.18.0",
-		"@typescript-eslint/parser": "^2.18.0",
+		"@types/node": "^12.20.19",
+		"@types/vscode": "^1.59.0",
+		"@typescript-eslint/eslint-plugin": "^2.34.0",
+		"@typescript-eslint/parser": "^2.34.0",
 		"eslint": "^6.8.0",
-		"glob": "^7.1.6",
-		"mocha": "^7.0.1",
-		"ts-sinon": "^1.0.25",
-		"typescript": "^3.7.5",
-		"vscode-test": "^1.3.0"
+		"glob": "^7.1.7",
+		"mocha": "^7.2.0",
+		"ts-sinon": "^1.2.1",
+		"typescript": "^3.9.10",
+		"vscode-test": "^1.6.1"
 	},
 	"dependencies": {
-		"@types/js-yaml": "^3.12.3",
+		"@types/js-yaml": "^3.12.7",
 		"@types/tmp": "^0.1.0",
-		"js-yaml": "^3.13.1",
+		"js-yaml": "^3.14.1",
 		"tmp": "^0.1.0"
 	}
 }

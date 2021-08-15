@@ -104,27 +104,27 @@ data:
 
 			// Close all editors to get a good initial state
 			await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-			assert.equal(vscode.workspace.textDocuments.length, 0);
+			assert.strictEqual(vscode.workspace.textDocuments.length, 0);
 
 			// Open secret file
 			const textDocument = await vscode.workspace.openTextDocument(temporaryFile.name); //({ content: secretFileContent })
 			await vscode.window.showTextDocument(textDocument);
-			assert.notEqual(textDocument, null);
-			assert.equal(vscode.workspace.textDocuments.length, 1);
+			assert.notStrictEqual(textDocument, null);
+			assert.strictEqual(vscode.workspace.textDocuments.length, 1);
 
 			// Execute seal secret file command - This is our 'act' step
 			await vscode.commands.executeCommand('extension.sealKubeSecretFile');
 
 			// Assert expected result
-			assert.equal(vscode.workspace.textDocuments.length, 2);
+			assert.strictEqual(vscode.workspace.textDocuments.length, 2);
 			const resultDocument = vscode.workspace.textDocuments.find(x => x !== textDocument);
 			const resultText = resultDocument?.getText();
 			if (!resultText) {assert.fail();}
-			const yamlResult = yaml.safeLoad(resultText);
+			const yamlResult : any = yaml.safeLoad(resultText);
 			assert.ok(yamlResult);
-			assert.equal(yamlResult.kind, 'SealedSecret');
-			assert.equal(yamlResult.metadata.name, 'fake-name');
-			assert.equal(yamlResult.metadata.namespace, 'fake-namespace');
+			assert.strictEqual(yamlResult.kind, 'SealedSecret');
+			assert.strictEqual(yamlResult.metadata.name, 'fake-name');
+			assert.strictEqual(yamlResult.metadata.namespace, 'fake-namespace');
 			assert.ok(yamlResult.spec.encryptedData.password);
 			assert.ok(yamlResult.spec.encryptedData.username);
 		}

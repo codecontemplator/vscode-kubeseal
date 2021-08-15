@@ -41,7 +41,7 @@ export function collectSealSecretDefaults(context : ExtensionContext, document :
         // Try to extract name, namespace and scope from document
         try {
             const documentText = document.getText();
-            const documentDom = yaml.safeLoad(documentText);
+            const documentDom : any = yaml.safeLoad(documentText);
             result.name = documentDom?.metadata?.name;
             result.namespace = documentDom?.metadata?.namespace;
             const annotations = documentDom?.metadata?.annotations;

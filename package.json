@@ -10,7 +10,7 @@
 		"url": "https://github.com/codecontemplator/vscode-kubeseal.git"
 	},
 	"engines": {
-		"vscode": "^1.43.0"
+		"vscode": "^1.59.0"
 	},
 	"categories": [
 		"Other"

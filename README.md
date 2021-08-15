@@ -91,3 +91,7 @@ Improved select certificate dialog
 ### 0.0.4
 
 Improved error handling and error messages when underlying command execution fails
+
+### 0.0.5
+
+Security patches

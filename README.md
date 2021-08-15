@@ -94,4 +94,4 @@ Improved error handling and error messages when underlying command execution fai
 
 ### 0.0.5
 
-Security patches
+Security patches (updated npm dependencies)

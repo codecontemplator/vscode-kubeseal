@@ -16,7 +16,7 @@ export async function sealSecretRaw(
     
     // Construct command line
     const normalizedTemporaryFilename = temporaryFile.name.replace(/\\/g, '/');
-    const normalizedCertificatePath = `--cert "file://${sealSecretParams.certificatePath?.replace(/\\/g, '/')}"`;
+    const normalizedCertificatePath = `file://${sealSecretParams.certificatePath?.replace(/\\/g, '/')}`;
     let command = '';
     switch(sealSecretParams.scope)
     {
@@ -61,7 +61,7 @@ export async function sealSecretFile(
     const secretFileData = fs.readFileSync(secretFilePath);
 
     // Construct command line
-    const normalizedCertificatePath = `--cert "file://${sealSecretParams.certificatePath?.replace(/\\/g, '/')}"`;
+    const normalizedCertificatePath = `file://${sealSecretParams.certificatePath?.replace(/\\/g, '/')}`;
     let command = '';
     switch(sealSecretParams.scope)
     {
@@ -78,7 +78,7 @@ export async function sealSecretFile(
             throw new Error(`Internal error. Unknown scope ${sealSecretParams.scope}`);
     }
     if (localCert){
-        command = `${command} -- cert "${normalizedCertificatePath}"`
+        command = `${command} --cert "${normalizedCertificatePath}"`;
     }
 
     // Execute command line

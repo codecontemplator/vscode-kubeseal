@@ -96,3 +96,7 @@ Improved error handling and error messages when underlying command execution fai
 ### 0.0.5
 
 Security patches (updated npm dependencies)
+
+### 0.0.6
+
+Making certificatePath optional to allow use of cluster-side certificates

@@ -9,7 +9,8 @@ import { ExtensionState } from './types';
 
 let extensionState : ExtensionState = {
 	kubeSealPath: undefined,
-	sealSecretParams: undefined
+	sealSecretParams: undefined,
+	localCert: true,
 };
 
 export function activate(context: vscode.ExtensionContext) {
@@ -17,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
 	function initializeConfiguration() {
 		const kubesealConfiguration = vscode.workspace.getConfiguration('kubeseal');
 		const configuredKubeSealPath = kubesealConfiguration.get<string>('executablePath');
+		const configuredLocalCert = kubesealConfiguration.get<boolean>('useLocalCertificate');
+		extensionState.localCert = configuredLocalCert!;
 		if (os.platform() === 'win32') {
 			extensionState.kubeSealPath = configuredKubeSealPath || path.join(context.extensionPath, 'bin', 'kubeseal.exe');
 		} else {
@@ -68,7 +71,7 @@ export function activate(context: vscode.ExtensionContext) {
 		
 			const document = editor.document;
 			extensionState.sealSecretParams = collectSealSecretDefaults(context, document, extensionState.sealSecretParams);
-			extensionState.sealSecretParams = await collectSealSecretUserInput(context, extensionState.sealSecretParams);
+			extensionState.sealSecretParams = await collectSealSecretUserInput(context, extensionState.sealSecretParams, extensionState.localCert);
 
 			if (!extensionState.kubeSealPath) {
 				vscode.window.showErrorMessage(`kubeseal.executablePath is not set`);
@@ -76,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 
 			try {
-				const sealedSecret = await sealSecretFile(extensionState.kubeSealPath, document.fileName, extensionState.sealSecretParams);
+				const sealedSecret = await sealSecretFile(extensionState.kubeSealPath, document.fileName, extensionState.sealSecretParams, extensionState.localCert);
 				const textDocument = await vscode.workspace.openTextDocument({ content: sealedSecret });
 				if (textDocument) {
 					await vscode.window.showTextDocument(textDocument, { viewColumn: vscode.ViewColumn.Beside });
@@ -108,11 +111,11 @@ export function activate(context: vscode.ExtensionContext) {
 			const selection = editor.selection;
 
 			extensionState.sealSecretParams = collectSealSecretDefaults(context, document, extensionState.sealSecretParams);
-			extensionState.sealSecretParams = await collectSealSecretUserInput(context, extensionState.sealSecretParams);
+			extensionState.sealSecretParams = await collectSealSecretUserInput(context, extensionState.sealSecretParams, extensionState.localCert);
 			const plainTextSecret = document.getText(selection);
 
 			try {
-				const sealedSecret = await sealSecretRaw(extensionState.kubeSealPath, plainTextSecret, extensionState.sealSecretParams);
+				const sealedSecret = await sealSecretRaw(extensionState.kubeSealPath, plainTextSecret, extensionState.sealSecretParams, extensionState.localCert);
 	
 				editor.edit(editBuilder => {
 					editBuilder.replace(selection, sealedSecret);

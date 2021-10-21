@@ -6,7 +6,8 @@ import * as path from 'path';
 
 export async function collectSealSecretUserInput(
 		context: ExtensionContext, 
-		defaults: SealSecretParameters | null
+		defaults: SealSecretParameters | null,
+		localCert: boolean,
 	) : Promise<SealSecretParameters> {
 
 	class SimpleButton implements QuickInputButton {
@@ -68,7 +69,9 @@ export async function collectSealSecretUserInput(
 				return (input: MultiStepInput) => inputNamespace(input, state);
 			case Scope[Scope.clusterWide]:
 				state.scopeValue = Scope.clusterWide;
-				return (input: MultiStepInput) => inputCertificatePath(input, state);
+				if (localCert){
+					return (input: MultiStepInput) => inputCertificatePath(input, state);
+				}
 		}
 	}
 	
@@ -91,8 +94,9 @@ export async function collectSealSecretUserInput(
 			validate: validateNamespace,
 			shouldResume: shouldResume
 		});
-
-		return (input: MultiStepInput) => inputCertificatePath(input, state);
+		if (localCert){
+			return (input: MultiStepInput) => inputCertificatePath(input, state);
+		}
 	}
 
 	async function inputCertificatePath(input: MultiStepInput, state: Partial<State>) : Promise<InputStep | void> {
@@ -178,7 +182,7 @@ export async function collectSealSecretUserInput(
 		scope: state.scopeValue,
 		name: state.name,
 		namespace: state.namespace,
-		certificatePath: state.certificatePath
+		certificatePath: state.certificatePath,
 	};
 }
 

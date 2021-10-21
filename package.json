@@ -36,11 +36,15 @@
 			"title": "Seal Kubernetes Secret Configuration",
 			"properties": {
 				"kubeseal.executablePath": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"default": null,
 					"description": "Where to find kubeseal executable",
+					"scope": "resource"
+				},
+				"kubeseal.useLocalCertificate": {
+					"type": "boolean",
+					"default": true,
+					"description": "Use local certificate file to seal secrets. Set to false if certificate is on your remote cluster.",
 					"scope": "resource"
 				}
 			}

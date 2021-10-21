@@ -23,7 +23,6 @@ suite('Defaults', () => {
         // Assert
         assert.equal(result.name, lastUsed.name);
         assert.equal(result.namespace, lastUsed.namespace);
-        assert.equal(result.certificatePath, lastUsed.certificatePath);
         assert.equal(result.scope, lastUsed.scope);
     });
 

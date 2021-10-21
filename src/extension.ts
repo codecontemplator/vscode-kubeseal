@@ -9,7 +9,8 @@ import { ExtensionState } from './types';
 
 let extensionState : ExtensionState = {
 	kubeSealPath: undefined,
-	sealSecretParams: undefined
+	sealSecretParams: undefined,
+	localCert: undefined,
 };
 
 export function activate(context: vscode.ExtensionContext) {
@@ -17,6 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
 	function initializeConfiguration() {
 		const kubesealConfiguration = vscode.workspace.getConfiguration('kubeseal');
 		const configuredKubeSealPath = kubesealConfiguration.get<string>('executablePath');
+		const configuredLocalCert = kubesealConfiguration.get<Boolean>('useLocalCertificate');
+		extensionState.localCert = configuredLocalCert;
 		if (os.platform() === 'win32') {
 			extensionState.kubeSealPath = configuredKubeSealPath || path.join(context.extensionPath, 'bin', 'kubeseal.exe');
 		} else {

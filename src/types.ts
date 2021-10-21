@@ -13,5 +13,6 @@ export interface SealSecretParameters {
 
 export interface ExtensionState {
     kubeSealPath: string | undefined,
-    sealSecretParams: SealSecretParameters | undefined
+    sealSecretParams: SealSecretParameters | undefined,
+    localCert: boolean | undefined
 }

@@ -69,6 +69,7 @@ The plugin ships with a prebuilt version of kubeseal for windows. On other platf
 ## Extension Settings
 
 * `kubeseal.executablePath`: path to kubeseal executable
+* `kubeseal.useLocalCertificate`: Use local certificate file to seal secrets. Set to false if certificate is on your cluster.
 
 ## Known Issues
 

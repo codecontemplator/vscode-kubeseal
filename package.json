@@ -2,7 +2,7 @@
 	"name": "kubeseal",
 	"displayName": "Kubeseal",
 	"description": "Kubeseal for vscode",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"publisher": "codecontemplator",
 	"license": "Apache License",
 	"repository": {
@@ -36,11 +36,15 @@
 			"title": "Seal Kubernetes Secret Configuration",
 			"properties": {
 				"kubeseal.executablePath": {
-					"type": [
-						"string"
-					],
+					"type": "string",
 					"default": null,
 					"description": "Where to find kubeseal executable",
+					"scope": "resource"
+				},
+				"kubeseal.useLocalCertificate": {
+					"type": "boolean",
+					"default": true,
+					"description": "Use local certificate file to seal secrets. Set to false if certificate is on your remote cluster.",
 					"scope": "resource"
 				}
 			}

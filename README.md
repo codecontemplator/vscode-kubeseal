@@ -1,7 +1,9 @@
+[![Node.js CI](https://github.com/codecontemplator/vscode-kubeseal/actions/workflows/ci.yml/badge.svg)](https://github.com/codecontemplator/vscode-kubeseal/actions/workflows/ci.yml)
+
 # Kubeseal extension for VS Code
 
 This extension provides functionality for sealed kubernets secrets.
-It wraps the command line utility `kubeseal` which is a part of the 
+It wraps the command line utility `kubeseal` which is a part of the
 https://github.com/bitnami-labs/sealed-secrets.
 
 ## Features
@@ -73,7 +75,7 @@ The plugin ships with a prebuilt version of kubeseal for windows. On other platf
 
 ## Known Issues
 
-This extension is very much work in progress. 
+This extension is very much work in progress.
 
 ## Release Notes
 

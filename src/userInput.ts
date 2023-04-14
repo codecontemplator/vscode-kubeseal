@@ -133,6 +133,7 @@ export async function collectSealSecretUserInput(
 					canSelectFiles: true, 
 					canSelectFolders: false, 
 					canSelectMany: false,
+					// eslint-disable-next-line @typescript-eslint/naming-convention
 					filters: { 'Certificates': [ 'pem' ]},
 				});
 

@@ -86,7 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}		
 			} 
 			catch (error) {
-				vscode.window.showErrorMessage(error || "An unknown error occurred");
+				vscode.window.showErrorMessage(String(error) || "An unknown error occurred");
 			}
 		}
 	});
@@ -122,7 +122,7 @@ export function activate(context: vscode.ExtensionContext) {
 				});
 			}
 			catch(error) {
-				vscode.window.showErrorMessage(error || "An unknown error occurred");
+				vscode.window.showErrorMessage(String(error) || "An unknown error occurred");
 			}
 		}
 	});

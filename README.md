@@ -100,3 +100,7 @@ Security patches (updated npm dependencies)
 ### 0.0.6
 
 Making certificatePath optional to allow use of cluster-side certificates
+
+### 0.0.7
+
+Security patches, updated mocha test framework, typescript version and the plugin framework

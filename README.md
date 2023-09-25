@@ -104,3 +104,8 @@ Making certificatePath optional to allow use of cluster-side certificates
 ### 0.0.7
 
 Security patches, updated mocha test framework, typescript version and the plugin framework
+
+### 0.0.8
+
+Support for multi-cursor selection and security patches
+

@@ -107,5 +107,5 @@ Security patches, updated mocha test framework, typescript version and the plugi
 
 ### 0.0.8
 
-Support for multi-cursor selection and security patches
+Support for multi-cursor selection
 

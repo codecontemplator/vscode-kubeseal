@@ -3,7 +3,7 @@ import * as yaml from 'js-yaml';
 import { SealSecretParameters, Scope } from './types';
 import * as path from 'path';
 
-export function collectSealSecretDefaults(context: ExtensionContext, document: TextDocument, lastUsed: SealSecretParameters | null = null): SealSecretParameters {
+export function collectSealSecretDefaults(context: ExtensionContext, document: TextDocument, lastUsed: SealSecretParameters | null = null, isSecretFile: boolean = true): SealSecretParameters {
 
     // Create result structure 
     let result = lastUsed || {
@@ -33,7 +33,7 @@ export function collectSealSecretDefaults(context: ExtensionContext, document: T
             result.namespace = `${teamName}-${appName}`;
             result.certificatePath = path.join(root, 'sealed-secrets', envName === 'prod' ? 'prod.pem' : 'nonprod.pem');
         }
-    } else {
+    } else if (isSecretFile) {
         // Try to extract name, namespace and scope from document
         try {
             const documentText = document.getText();

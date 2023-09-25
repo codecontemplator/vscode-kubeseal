@@ -104,20 +104,23 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             const document = editor.document;
-            const selection = editor.selection;
+            const selections = editor.selections;
 
-            extensionState.sealSecretParams = collectSealSecretDefaults(context, document, extensionState.sealSecretParams);
+            extensionState.sealSecretParams = collectSealSecretDefaults(context, document, extensionState.sealSecretParams, false);
             extensionState.sealSecretParams = await collectSealSecretUserInput(context, extensionState.sealSecretParams, extensionState.localCert);
-            const plainTextSecret = document.getText(selection);
 
-            try {
-                const sealedSecret = await sealSecretRaw(extensionState.kubeSealPath, plainTextSecret, extensionState.sealSecretParams, extensionState.localCert);
+            for (const selection of selections) {
+                const plainTextSecret = document.getText(selection);
 
-                editor.edit(editBuilder => {
-                    editBuilder.replace(selection, sealedSecret);
-                });
-            } catch (error) {
-                vscode.window.showErrorMessage(String(error) || "An unknown error occurred");
+                try {
+                    const sealedSecret = await sealSecretRaw(extensionState.kubeSealPath, plainTextSecret, extensionState.sealSecretParams, extensionState.localCert);
+
+                    editor.edit(editBuilder => {
+                        editBuilder.replace(selection, sealedSecret);
+                    });
+                } catch (error) {
+                    vscode.window.showErrorMessage(String(error) || "An unknown error occurred");
+                }
             }
         }
     });
@@ -127,4 +130,3 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
 }
-
